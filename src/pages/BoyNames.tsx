@@ -14,6 +14,7 @@ import {
 } from "../components/ui/breadcrumb";
 import NameCard from "../components/NameCard";
 import SearchBar from "../components/SearchBar";
+import PopularNamesSidebar from "../components/PopularNamesSidebar";
 
 const BoyNames = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -124,7 +125,7 @@ const BoyNames = () => {
       <Header />
       
       <main className="pt-24 md:pt-32 pb-16 md:pb-24 px-4">
-        <div className="container mx-auto max-w-5xl">
+        <div className="container mx-auto max-w-6xl">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
@@ -140,38 +141,46 @@ const BoyNames = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Page Header */}
-          <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Boy Names
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Discover meaningful and beautiful boy names from around the world
-            </p>
-          </div>
-          
-          {/* Search Bar */}
-          <SearchBar className="mb-12" placeholder="Search for boy names..." />
-          
-          {/* Names Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
-            {boyNames.map((name) => (
-              <NameCard key={name.id} {...name} />
-            ))}
-          </div>
-          
-          {/* Load More Button */}
-          <div className="text-center mt-8">
-            <Button className="w-full sm:w-auto">
-              Load More Names
-            </Button>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Page Header */}
+              <div className="text-center mb-8 animate-fade-in">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                  Boy Names
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Discover meaningful and beautiful boy names from around the world
+                </p>
+              </div>
+              
+              {/* Search Bar */}
+              <SearchBar className="mb-12" placeholder="Search for boy names..." />
+              
+              {/* Names Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 animate-fade-in">
+                {boyNames.map((name) => (
+                  <NameCard key={name.id} {...name} />
+                ))}
+              </div>
+              
+              {/* Load More Button */}
+              <div className="text-center mt-8">
+                <Button className="w-full sm:w-auto">
+                  Load More Names
+                </Button>
+              </div>
+            </div>
+            
+            {/* Sidebar */}
+            <PopularNamesSidebar className="hidden lg:block" />
           </div>
         </div>
       </main>
       
       {/* Simplified Footer */}
       <footer className="py-8 px-4 border-t border-gray-200">
-        <div className="container mx-auto max-w-5xl text-center">
+        <div className="container mx-auto max-w-6xl text-center">
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} NameMuse. All rights reserved.
           </p>
