@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Heart, Info } from "lucide-react";
+import { Heart, Info, Globe, Church, Languages } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NameCardProps {
@@ -10,9 +10,20 @@ interface NameCardProps {
   gender: "boy" | "girl" | "unisex";
   popularity?: number;
   origin?: string;
+  religion?: string;
+  language?: string;
 }
 
-const NameCard = ({ id, name, meaning, gender, popularity, origin }: NameCardProps) => {
+const NameCard = ({ 
+  id, 
+  name, 
+  meaning, 
+  gender, 
+  popularity, 
+  origin, 
+  religion, 
+  language 
+}: NameCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -66,8 +77,21 @@ const NameCard = ({ id, name, meaning, gender, popularity, origin }: NameCardPro
         {/* Details */}
         <div className="flex flex-wrap gap-2 text-xs text-gray-500">
           {origin && (
-            <span className="bg-gray-100 px-2 py-1 rounded-md">
-              Origin: {origin}
+            <span className="bg-gray-100 px-2 py-1 rounded-md flex items-center">
+              <Globe className="h-3 w-3 mr-1" />
+              {origin}
+            </span>
+          )}
+          {religion && (
+            <span className="bg-gray-100 px-2 py-1 rounded-md flex items-center">
+              <Church className="h-3 w-3 mr-1" />
+              {religion}
+            </span>
+          )}
+          {language && (
+            <span className="bg-gray-100 px-2 py-1 rounded-md flex items-center">
+              <Languages className="h-3 w-3 mr-1" />
+              {language}
             </span>
           )}
           {popularity && (

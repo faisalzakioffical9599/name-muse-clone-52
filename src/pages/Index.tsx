@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import SearchBar from "../components/SearchBar";
 import AlphabetNav from "../components/AlphabetNav";
 import FeaturedNames from "../components/FeaturedNames";
+import RegionalCategories from "../components/RegionalCategories";
 import NameCard from "../components/NameCard";
 
 const Index = () => {
@@ -36,42 +37,54 @@ const Index = () => {
       name: "Aiden",
       meaning: "Fiery one",
       gender: "boy" as const,
-      origin: "Irish"
+      origin: "Irish",
+      religion: "Christianity",
+      language: "Gaelic"
     },
     {
       id: "a2",
       name: "Amara",
       meaning: "Grace, eternal",
       gender: "girl" as const,
-      origin: "African"
+      origin: "African",
+      religion: "Christianity",
+      language: "Igbo"
     },
     {
       id: "a3",
       name: "Atlas",
       meaning: "Bearer of the heavens",
       gender: "boy" as const,
-      origin: "Greek"
+      origin: "Greek",
+      religion: "Hellenism",
+      language: "Greek"
     },
     {
       id: "a4",
       name: "Aria",
       meaning: "Song or melody",
       gender: "girl" as const,
-      origin: "Italian"
+      origin: "Italian",
+      religion: "Christianity",
+      language: "Italian"
     },
     {
       id: "a5",
       name: "Asher",
       meaning: "Fortunate, blessed, happy one",
       gender: "boy" as const,
-      origin: "Hebrew"
+      origin: "Hebrew",
+      religion: "Judaism",
+      language: "Hebrew"
     },
     {
       id: "a6",
       name: "Avery",
       meaning: "Ruler of the elves",
       gender: "unisex" as const,
-      origin: "English"
+      origin: "English",
+      religion: "Christianity",
+      language: "English"
     },
   ];
 
@@ -87,7 +100,7 @@ const Index = () => {
               Find the Perfect Name for Your Baby
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Explore thousands of beautiful names with meanings, origins, and popularity.
+              Explore thousands of beautiful names with meanings, origins, and traditions.
             </p>
             
             {/* Search Bar */}
@@ -121,8 +134,22 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Popular Names Section */}
+      {/* Regional Categories Section */}
       <section className="py-16 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold tracking-tight mb-2">Browse Names by Region</h2>
+            <p className="text-muted-foreground">
+              Discover beautiful names from different cultures and traditions
+            </p>
+          </div>
+          
+          <RegionalCategories />
+        </div>
+      </section>
+      
+      {/* Popular Names Section */}
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <FeaturedNames 
             title="Popular Names" 
@@ -133,7 +160,7 @@ const Index = () => {
       </section>
       
       {/* Browse by Alphabet Section */}
-      <section className="py-16 px-4">
+      <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold tracking-tight mb-2">Browse Names by Letter</h2>
@@ -177,7 +204,7 @@ const Index = () => {
       </section>
       
       {/* Recently Added Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <FeaturedNames 
             title="Recently Added Names" 

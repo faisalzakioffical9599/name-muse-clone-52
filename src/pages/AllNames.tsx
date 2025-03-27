@@ -40,6 +40,8 @@ const AllNames = () => {
     const names = [];
     const genders = ["boy", "girl", "unisex"] as const;
     const origins = ["Arabic", "English", "Hebrew", "Greek", "Indian", "Latin", "French", "Irish", "Italian", "Spanish"];
+    const religions = ["Islam", "Christianity", "Judaism", "Hinduism", "Buddhism", "Sikhism"];
+    const languages = ["Arabic", "English", "Hebrew", "Hindi", "Greek", "Latin", "French", "Gaelic", "Italian", "Spanish"];
     
     const meaningPrefixes = ["One who is", "Bringer of", "Child of", "Blessed with", "Giver of"];
     const meaningNouns = ["light", "strength", "wisdom", "grace", "peace", "joy", "love", "hope", "courage", "faith"];
@@ -60,16 +62,20 @@ const AllNames = () => {
       const meaningNoun = meaningNouns[Math.floor(Math.random() * meaningNouns.length)];
       const meaning = `${meaningPrefix} ${meaningNoun}`;
       
-      // Random gender and origin
+      // Random gender, origin, religion, language
       const gender = genders[Math.floor(Math.random() * genders.length)];
       const origin = origins[Math.floor(Math.random() * origins.length)];
+      const religion = religions[Math.floor(Math.random() * religions.length)];
+      const language = languages[Math.floor(Math.random() * languages.length)];
       
       names.push({
         id: `${letter.toLowerCase()}-${i}`,
         name,
         meaning,
         gender,
-        origin
+        origin,
+        religion,
+        language
       });
     }
     
@@ -89,7 +95,9 @@ const AllNames = () => {
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink as={Link} to="/">Home</BreadcrumbLink>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
