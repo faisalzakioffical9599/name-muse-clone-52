@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Header from "../components/Header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Heart, RefreshCw } from "lucide-react";
+import { Heart, RefreshCw, Sparkles, ChevronDown } from "lucide-react";
 import { 
   Card, 
   CardContent, 
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const LoveCalculator = () => {
   const [firstName, setFirstName] = useState("");
@@ -72,6 +74,18 @@ const LoveCalculator = () => {
     setAnalysis("");
   };
 
+  // Chart data for visualization
+  const getChartData = () => {
+    if (result === null) return [];
+    
+    return [
+      { name: "Compatibility", value: result },
+      { name: "Room for Growth", value: 100 - result }
+    ];
+  };
+
+  const COLORS = ["#FF6B8A", "#F3F4F6"];
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -80,13 +94,13 @@ const LoveCalculator = () => {
       <section className="pt-24 md:pt-32 pb-16 px-4 bg-gradient-to-b from-pink-50 to-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            Love Name Calculator
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">Love Name Calculator</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Calculate the compatibility between two names for fun
+            Discover the compatibility between two names for fun
           </p>
           
-          <Card className="max-w-md mx-auto bg-white/80 backdrop-blur-sm">
+          <Card className="max-w-md mx-auto bg-white/80 backdrop-blur-sm shadow-lg border-pink-100">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-2">
                 <Heart className="h-5 w-5 text-pink-500 fill-pink-500" />
@@ -104,6 +118,7 @@ const LoveCalculator = () => {
                     placeholder="Enter first name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    className="border-pink-200 focus-visible:ring-pink-400"
                   />
                 </div>
                 <div>
@@ -112,13 +127,14 @@ const LoveCalculator = () => {
                     placeholder="Enter second name"
                     value={secondName}
                     onChange={(e) => setSecondName(e.target.value)}
+                    className="border-pink-200 focus-visible:ring-pink-400"
                   />
                 </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button 
-                className="w-full" 
+                className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600" 
                 onClick={calculateLove}
                 disabled={loading}
               >
@@ -136,7 +152,7 @@ const LoveCalculator = () => {
               </Button>
               
               {result !== null && (
-                <div className="w-full space-y-3 pt-2">
+                <div className="w-full space-y-3 pt-2 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Compatibility Score:</span>
                     <span className="text-lg font-bold">{result}%</span>
@@ -147,10 +163,56 @@ const LoveCalculator = () => {
                     }}
                   />
                   <p className="text-sm text-gray-600 mt-2">{analysis}</p>
+                  
+                  {/* Chart Visualization */}
+                  <div className="mt-4 h-64">
+                    <ChartContainer
+                      config={{
+                        compatibility: { color: "#FF6B8A", label: "Compatibility" },
+                        remaining: { color: "#F3F4F6", label: "Room for Growth" }
+                      }}
+                    >
+                      <PieChart>
+                        <Pie
+                          data={getChartData()}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {getChartData().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip />
+                      </PieChart>
+                    </ChartContainer>
+                    <div className="text-center mt-4">
+                      <div className="inline-flex items-center gap-2 text-sm">
+                        <span className="inline-block w-3 h-3 rounded-full bg-pink-400"></span>
+                        <span>Compatibility</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 text-center">
+                    <p className="text-sm font-medium text-pink-600">
+                      {firstName} + {secondName} = {result}% Match
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {result > 75 ? "A great potential match!" : 
+                       result > 50 ? "Could work with some effort!" : 
+                       "Perhaps better as friends!"}
+                    </p>
+                  </div>
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="mt-3" 
+                    className="mt-3 border-pink-200 text-pink-600 hover:bg-pink-50" 
                     onClick={resetCalculator}
                   >
                     <RefreshCw className="h-3 w-3 mr-1" />
@@ -167,7 +229,10 @@ const LoveCalculator = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="prose max-w-none">
-            <h2>About the Love Calculator</h2>
+            <h2 className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-pink-500" />
+              About the Love Calculator
+            </h2>
             <p>
               Our Name Compatibility Calculator is a fun tool that analyzes the letters in two 
               names to generate a compatibility percentage. While not based on scientific 

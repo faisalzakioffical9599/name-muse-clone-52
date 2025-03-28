@@ -14,6 +14,8 @@ import LoveCalculator from "./pages/LoveCalculator";
 import BabyNameMatcher from "./pages/BabyNameMatcher";
 import NameDetail from "./pages/NameDetail";
 import CategoryNames from "./pages/CategoryNames";
+import FamousPersonalities from "./pages/FamousPersonalities";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/name-meanings" element={<NameMeanings />} />
           <Route path="/love-calculator" element={<LoveCalculator />} />
           <Route path="/baby-name-matcher" element={<BabyNameMatcher />} />
+          <Route path="/famous-personalities" element={<FamousPersonalities />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/name/:nameId" element={<NameDetail />} />
           <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X, Heart, Baby, Book, Sparkles } from "lucide-react";
+import { Search, Menu, X, Heart, Baby, Book, Sparkles, User, Database, Settings } from "lucide-react";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -73,6 +73,12 @@ const Header = () => {
             >
               <Baby size={14} className="mr-1" /> Baby Name Matcher
             </Link>
+            <Link 
+              to="/famous-personalities" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <User size={14} className="mr-1" /> Famous Names
+            </Link>
             <button 
               className="text-sm font-medium flex items-center hover:text-primary transition-colors duration-200"
             >
@@ -136,6 +142,20 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Baby size={14} className="mr-1" /> Baby Name Matcher
+              </Link>
+              <Link 
+                to="/famous-personalities" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={14} className="mr-1" /> Famous Names
+              </Link>
+              <Link 
+                to="/admin" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Settings size={14} className="mr-1" /> Admin Panel
               </Link>
               <Link 
                 to="/search" 
