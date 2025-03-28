@@ -6,6 +6,7 @@ import PageContent from "./pages/PageContent";
 import ManageFAQs from "./pages/ManageFAQs";
 import UserManagement from "./pages/UserManagement";
 import SiteSettings from "./pages/SiteSettings";
+import RegionalCategories from "./pages/RegionalCategories";
 import { useState } from "react";
 
 const Admin = () => {
@@ -25,6 +26,8 @@ const Admin = () => {
         return <UserManagement />;
       case "settings":
         return <SiteSettings />;
+      case "categories":
+        return <RegionalCategories />;
       default:
         return <Dashboard />;
     }
