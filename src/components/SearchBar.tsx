@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { cn } from "@/lib/utils";
+import AlphabetNav from "../components/AlphabetNav";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -22,13 +23,19 @@ const SearchBar = ({ placeholder = "Search for names...", className = "" }: Sear
   const [country, setCountry] = useState("");
   const [religion, setReligion] = useState("");
   const [language, setLanguage] = useState("");
+  const [selectedLetter, setSelectedLetter] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      console.log("Searching for:", query, { country, religion, language });
+    if (query.trim() || selectedLetter || country || religion || language) {
+      console.log("Searching for:", { query, selectedLetter, country, religion, language });
       // Handle search submission (e.g. redirect to search results page)
     }
+  };
+
+  const handleLetterSelect = (letter: string) => {
+    setSelectedLetter(letter);
+    console.log("Selected letter:", letter);
   };
 
   // Mock data for filter options
@@ -94,6 +101,9 @@ const SearchBar = ({ placeholder = "Search for names...", className = "" }: Sear
             <span className="ml-2 font-medium">Search</span>
           </button>
         </div>
+        
+        {/* Alphabet Navigation */}
+        <AlphabetNav onLetterSelect={handleLetterSelect} selectedLetter={selectedLetter} className="mt-3" />
         
         {/* Filters section */}
         {showFilters && (
