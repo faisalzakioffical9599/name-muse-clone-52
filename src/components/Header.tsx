@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, Heart, Baby, Book, Sparkles } from "lucide-react";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,15 +51,27 @@ const Header = () => {
             </Link>
             <Link 
               to="/unique-names" 
-              className="text-sm font-medium hover:text-primary transition-colors duration-200"
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
             >
-              Unique Names
+              <Sparkles size={14} className="mr-1" /> Unique Names
             </Link>
             <Link 
               to="/name-meanings" 
-              className="text-sm font-medium hover:text-primary transition-colors duration-200"
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
             >
-              Name Meanings
+              <Book size={14} className="mr-1" /> Name Meanings
+            </Link>
+            <Link 
+              to="/love-calculator" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Heart size={14} className="mr-1" /> Love Calculator
+            </Link>
+            <Link 
+              to="/baby-name-matcher" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Baby size={14} className="mr-1" /> Baby Name Matcher
             </Link>
             <button 
               className="text-sm font-medium flex items-center hover:text-primary transition-colors duration-200"
@@ -99,17 +111,31 @@ const Header = () => {
               </Link>
               <Link 
                 to="/unique-names" 
-                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2"
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Unique Names
+                <Sparkles size={14} className="mr-1" /> Unique Names
               </Link>
               <Link 
                 to="/name-meanings" 
-                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2"
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Name Meanings
+                <Book size={14} className="mr-1" /> Name Meanings
+              </Link>
+              <Link 
+                to="/love-calculator" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart size={14} className="mr-1" /> Love Calculator
+              </Link>
+              <Link 
+                to="/baby-name-matcher" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Baby size={14} className="mr-1" /> Baby Name Matcher
               </Link>
               <Link 
                 to="/search" 

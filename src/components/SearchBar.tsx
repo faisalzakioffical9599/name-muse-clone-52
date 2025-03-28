@@ -1,166 +1,160 @@
 
 import { useState } from "react";
-import { Search, Filter } from "lucide-react";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import { cn } from "@/lib/utils";
-import AlphabetNav from "../components/AlphabetNav";
+import { Search, X, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import AlphabetNav from "./AlphabetNav";
 
 interface SearchBarProps {
-  placeholder?: string;
   className?: string;
 }
 
-const SearchBar = ({ placeholder = "Search for names...", className = "" }: SearchBarProps) => {
-  const [query, setQuery] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [country, setCountry] = useState("");
-  const [religion, setReligion] = useState("");
-  const [language, setLanguage] = useState("");
-  const [selectedLetter, setSelectedLetter] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
+const SearchBar = ({ className = "" }: SearchBarProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedLetter, setSelectedLetter] = useState<string>("");
+  
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim() || selectedLetter || country || religion || language) {
-      console.log("Searching for:", { query, selectedLetter, country, religion, language });
-      // Handle search submission (e.g. redirect to search results page)
-    }
+    // In a real app, this would trigger search functionality
+    console.log("Searching for:", searchTerm);
   };
-
+  
+  const handleClear = () => {
+    setSearchTerm("");
+  };
+  
+  // Handle letter selection from AlphabetNav
   const handleLetterSelect = (letter: string) => {
     setSelectedLetter(letter);
-    console.log("Selected letter:", letter);
+    setSearchTerm(prev => `${letter}`);
   };
 
-  // Mock data for filter options
-  const countries = [
-    { value: "indian", label: "Indian" },
-    { value: "arabic", label: "Arabic" },
-    { value: "english", label: "English" },
-    { value: "hebrew", label: "Hebrew" },
-    { value: "greek", label: "Greek" },
-  ];
-
-  const religions = [
-    { value: "islam", label: "Islamic" },
-    { value: "christianity", label: "Christian" },
-    { value: "hinduism", label: "Hindu" },
-    { value: "judaism", label: "Jewish" },
-    { value: "buddhism", label: "Buddhist" },
-  ];
-
-  const languages = [
-    { value: "arabic", label: "Arabic" },
-    { value: "english", label: "English" },
-    { value: "sanskrit", label: "Sanskrit" },
-    { value: "hebrew", label: "Hebrew" },
-    { value: "greek", label: "Greek" },
-  ];
-
   return (
-    <div className={cn("w-full max-w-2xl mx-auto", className)}>
-      <form 
-        onSubmit={handleSubmit}
-        className="relative w-full"
-      >
-        <div 
-          className={`flex items-center bg-white border rounded-2xl overflow-hidden transition-all duration-300 ${
-            isFocused 
-              ? "shadow-lg border-primary/20" 
-              : "shadow-md hover:shadow-lg border-transparent"
-          }`}
-        >
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            className="flex-1 py-4 px-6 outline-none text-foreground placeholder:text-muted-foreground bg-transparent"
-            placeholder={placeholder}
-          />
-          <button
-            type="button"
-            onClick={() => setShowFilters(!showFilters)}
-            className="px-3 text-gray-500 hover:text-gray-700"
-            aria-label="Toggle filters"
-          >
-            <Filter size={20} />
-          </button>
-          <button
-            type="submit"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-4 h-full flex items-center justify-center transition-colors duration-200"
-          >
-            <Search size={20} />
-            <span className="ml-2 font-medium">Search</span>
-          </button>
-        </div>
-        
-        {/* Alphabet Navigation */}
-        <AlphabetNav onLetterSelect={handleLetterSelect} selectedLetter={selectedLetter} className="mt-3" />
-        
-        {/* Filters section */}
-        {showFilters && (
-          <div className="mt-3 p-4 bg-white rounded-xl shadow-md animate-fade-in grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block text-gray-700">Country</label>
-              <Select value={country} onValueChange={setCountry}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any country</SelectItem>
-                  {countries.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-1 block text-gray-700">Religion</label>
-              <Select value={religion} onValueChange={setReligion}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a religion" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any religion</SelectItem>
-                  {religions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-1 block text-gray-700">Language</label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any language</SelectItem>
-                  {languages.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div className={`w-full max-w-3xl mx-auto ${className}`}>
+      <form onSubmit={handleSearch} className="relative">
+        <div className="flex">
+          <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="rounded-r-none border-r-0"
+                aria-label="Filter search"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <h3 className="font-medium">Filter By</h3>
+                
+                {/* Gender Filter */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Gender</h4>
+                  <RadioGroup defaultValue="all">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="all" id="gender-all" />
+                      <Label htmlFor="gender-all">All</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="boy" id="gender-boy" />
+                      <Label htmlFor="gender-boy">Boy</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="girl" id="gender-girl" />
+                      <Label htmlFor="gender-girl">Girl</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                
+                {/* Religion Filter */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Religion</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="religion-christian" />
+                      <Label htmlFor="religion-christian">Christian</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="religion-muslim" />
+                      <Label htmlFor="religion-muslim">Muslim</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="religion-hindu" />
+                      <Label htmlFor="religion-hindu">Hindu</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="religion-jewish" />
+                      <Label htmlFor="religion-jewish">Jewish</Label>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Origin Filter */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Origin</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="origin-arabic" />
+                      <Label htmlFor="origin-arabic">Arabic</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="origin-english" />
+                      <Label htmlFor="origin-english">English</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="origin-indian" />
+                      <Label htmlFor="origin-indian">Indian</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="origin-hebrew" />
+                      <Label htmlFor="origin-hebrew">Hebrew</Label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button>Apply Filters</Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          <div className="relative flex-1">
+            <Input
+              type="text"
+              placeholder="Search for names..."
+              className="rounded-l-none h-10 pr-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={handleClear}
+              >
+                <X size={16} />
+              </button>
+            )}
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <Search size={18} />
+            </button>
           </div>
-        )}
+        </div>
       </form>
+      
+      <div className="mt-4">
+        <AlphabetNav onLetterSelect={handleLetterSelect} selectedLetter={selectedLetter} />
+      </div>
     </div>
   );
 };

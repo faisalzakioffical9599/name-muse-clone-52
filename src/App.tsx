@@ -8,6 +8,10 @@ import Index from "./pages/Index";
 import AllNames from "./pages/AllNames";
 import BoyNames from "./pages/BoyNames";
 import GirlNames from "./pages/GirlNames";
+import UniqueNames from "./pages/UniqueNames";
+import NameMeanings from "./pages/NameMeanings";
+import LoveCalculator from "./pages/LoveCalculator";
+import BabyNameMatcher from "./pages/BabyNameMatcher";
 import NameDetail from "./pages/NameDetail";
 import CategoryNames from "./pages/CategoryNames";
 import NotFound from "./pages/NotFound";
@@ -25,6 +29,10 @@ const App = () => (
           <Route path="/all-names" element={<AllNames />} />
           <Route path="/boy-names" element={<BoyNames />} />
           <Route path="/girl-names" element={<GirlNames />} />
+          <Route path="/unique-names" element={<UniqueNames />} />
+          <Route path="/name-meanings" element={<NameMeanings />} />
+          <Route path="/love-calculator" element={<LoveCalculator />} />
+          <Route path="/baby-name-matcher" element={<BabyNameMatcher />} />
           <Route path="/name/:nameId" element={<NameDetail />} />
           <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
