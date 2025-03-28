@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Checkbox } from "../components/ui/checkbox";
 import RelatedNames from "../components/RelatedNames";
+import Check from "../components/Check";
 
 interface NameDetailInfo {
   id: string;
@@ -122,7 +123,7 @@ const NameDetail = () => {
                 <BreadcrumbLink asChild>
                   <Link to={`/${nameInfo.gender === "boy" ? "boy" : "girl"}-names`}>
                     {nameInfo.gender === "boy" ? "Boy" : "Girl"} Names
-                  </BreadcrumbLink>
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
