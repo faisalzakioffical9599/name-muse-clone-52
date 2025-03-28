@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X, Heart, Baby, Book, Sparkles, User, Database, Settings } from "lucide-react";
+import { Search, Menu, X, Heart, Baby, Book, Sparkles, User, Settings } from "lucide-react";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -78,6 +78,12 @@ const Header = () => {
               className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
             >
               <User size={14} className="mr-1" /> Famous Names
+            </Link>
+            <Link 
+              to="/admin" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Settings size={14} className="mr-1" /> Admin
             </Link>
             <button 
               className="text-sm font-medium flex items-center hover:text-primary transition-colors duration-200"

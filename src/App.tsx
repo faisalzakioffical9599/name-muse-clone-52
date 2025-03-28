@@ -15,7 +15,7 @@ import BabyNameMatcher from "./pages/BabyNameMatcher";
 import NameDetail from "./pages/NameDetail";
 import CategoryNames from "./pages/CategoryNames";
 import FamousPersonalities from "./pages/FamousPersonalities";
-import Admin from "./pages/Admin";
+import Admin from "./admin/index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
