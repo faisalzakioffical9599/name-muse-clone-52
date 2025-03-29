@@ -9,6 +9,12 @@ import UserManagement from "./pages/UserManagement";
 import SiteSettings from "./pages/SiteSettings";
 import RegionalCategories from "./pages/RegionalCategories";
 import NameStories, { SearchProps } from "./pages/NameStories";
+import NameFavorites from "./pages/NameFavorites";
+import NameCombiner from "./pages/NameCombiner";
+import NameCompatibility from "./pages/NameCompatibility";
+import NamePronunciation from "./pages/NamePronunciation";
+import TrendingNames from "./pages/TrendingNames";
+import BirthCalculator from "./pages/BirthCalculator";
 import SearchBar from "../components/SearchBar";
 import { FilterOptions } from "../components/SearchFilter";
 
@@ -49,13 +55,25 @@ const Admin = () => {
         return <RegionalCategories />;
       case "stories":
         return <NameStories searchProps={searchProps} />;
+      case "favorites":
+        return <NameFavorites />;
+      case "combiner":
+        return <NameCombiner />;
+      case "compatibility":
+        return <NameCompatibility />;
+      case "pronunciation":
+        return <NamePronunciation />;
+      case "trending":
+        return <TrendingNames />;
+      case "birthcalc":
+        return <BirthCalculator />;
       default:
         return <Dashboard />;
     }
   };
 
   // Only show search in relevant sections
-  const showSearch = ["names", "faqs", "regional", "stories"].includes(selectedTab);
+  const showSearch = ["names", "faqs", "regional", "stories", "trending"].includes(selectedTab);
 
   return (
     <AdminLayout 

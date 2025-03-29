@@ -9,7 +9,12 @@ import {
   User,
   Settings,
   Globe,
-  Book
+  Book,
+  Heart,
+  Calculator,
+  Music,
+  BarChart,
+  Star
 } from "lucide-react";
 
 export interface AdminLayoutProps {
@@ -118,6 +123,66 @@ const AdminLayout = ({
                       >
                         <Book className="h-4 w-4 mr-2" />
                         Name Stories
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "favorites" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("favorites")}
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorites
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "combiner" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("combiner")}
+                      >
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Name Combiner
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "compatibility" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("compatibility")}
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        Name Compatibility
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "pronunciation" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("pronunciation")}
+                      >
+                        <Music className="h-4 w-4 mr-2" />
+                        Pronunciation
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "trending" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("trending")}
+                      >
+                        <BarChart className="h-4 w-4 mr-2" />
+                        Trending Names
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "birthcalc" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("birthcalc")}
+                      >
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Birth Calculator
                       </Button>
                     </li>
                   </ul>

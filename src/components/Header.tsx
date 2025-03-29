@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X, Heart, Baby, Book, Sparkles, User, Settings } from "lucide-react";
+import { Search, Menu, X, Heart, Baby, Book, Sparkles, User, Settings, Star, Music, Globe, Calculator, BarChart } from "lucide-react";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,7 +36,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-4">
             <Link 
               to="/boy-names" 
               className="text-sm font-medium hover:text-primary transition-colors duration-200"
@@ -56,10 +56,22 @@ const Header = () => {
               <Sparkles size={14} className="mr-1" /> Unique Names
             </Link>
             <Link 
+              to="/unisex-names" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Star size={14} className="mr-1" /> Unisex Names
+            </Link>
+            <Link 
               to="/name-meanings" 
               className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
             >
               <Book size={14} className="mr-1" /> Name Meanings
+            </Link>
+            <Link 
+              to="/name-stories" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <User size={14} className="mr-1" /> Name Stories
             </Link>
             <Link 
               to="/love-calculator" 
@@ -74,10 +86,40 @@ const Header = () => {
               <Baby size={14} className="mr-1" /> Baby Name Matcher
             </Link>
             <Link 
-              to="/famous-personalities" 
+              to="/name-combiner" 
               className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
             >
-              <User size={14} className="mr-1" /> Famous Names
+              <Calculator size={14} className="mr-1" /> Name Combiner
+            </Link>
+            <Link 
+              to="/name-compatibility" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Star size={14} className="mr-1" /> Name Compatibility
+            </Link>
+            <Link 
+              to="/name-favorites" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Heart size={14} className="mr-1" /> Favorites
+            </Link>
+            <Link 
+              to="/name-pronunciation" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Music size={14} className="mr-1" /> Pronunciation
+            </Link>
+            <Link 
+              to="/trending-names" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <BarChart size={14} className="mr-1" /> Trending
+            </Link>
+            <Link 
+              to="/birth-calculator" 
+              className="text-sm font-medium hover:text-primary transition-colors duration-200 flex items-center"
+            >
+              <Calculator size={14} className="mr-1" /> Birth Calculator
             </Link>
             <Link 
               to="/admin" 
@@ -106,7 +148,7 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md shadow-md py-4 animate-fade-in">
           <div className="container mx-auto px-4">
-            <nav className="flex flex-col space-y-4">
+            <nav className="flex flex-col space-y-2">
               <Link 
                 to="/boy-names" 
                 className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2"
@@ -129,11 +171,25 @@ const Header = () => {
                 <Sparkles size={14} className="mr-1" /> Unique Names
               </Link>
               <Link 
+                to="/unisex-names" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Star size={14} className="mr-1" /> Unisex Names
+              </Link>
+              <Link 
                 to="/name-meanings" 
                 className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <Book size={14} className="mr-1" /> Name Meanings
+              </Link>
+              <Link 
+                to="/name-stories" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={14} className="mr-1" /> Name Stories
               </Link>
               <Link 
                 to="/love-calculator" 
@@ -150,11 +206,46 @@ const Header = () => {
                 <Baby size={14} className="mr-1" /> Baby Name Matcher
               </Link>
               <Link 
-                to="/famous-personalities" 
+                to="/name-combiner" 
                 className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <User size={14} className="mr-1" /> Famous Names
+                <Calculator size={14} className="mr-1" /> Name Combiner
+              </Link>
+              <Link 
+                to="/name-compatibility" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Star size={14} className="mr-1" /> Name Compatibility
+              </Link>
+              <Link 
+                to="/name-favorites" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart size={14} className="mr-1" /> Favorites
+              </Link>
+              <Link 
+                to="/name-pronunciation" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Music size={14} className="mr-1" /> Pronunciation
+              </Link>
+              <Link 
+                to="/trending-names" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BarChart size={14} className="mr-1" /> Trending
+              </Link>
+              <Link 
+                to="/birth-calculator" 
+                className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 flex items-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Calculator size={14} className="mr-1" /> Birth Calculator
               </Link>
               <Link 
                 to="/admin" 
