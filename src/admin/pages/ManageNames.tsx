@@ -8,9 +8,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Save, Plus, Trash2 } from "lucide-react";
+import {
+  PlusCircle, Save, Plus, Trash2, Pencil, Check, X
+} from "lucide-react";
+import { 
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
 
 const ManageNames = () => {
+  // Sample data for dropdowns
+  const origins = [
+    { id: "indian", name: "Indian" },
+    { id: "arabic", name: "Arabic" },
+    { id: "english", name: "English" },
+    { id: "hebrew", name: "Hebrew" },
+    { id: "greek", name: "Greek" },
+    { id: "latin", name: "Latin" },
+    { id: "french", name: "French" },
+    { id: "irish", name: "Irish" },
+  ];
+  
+  const religions = [
+    { id: "islam", name: "Islamic" },
+    { id: "christianity", name: "Christian" },
+    { id: "hinduism", name: "Hindu" },
+    { id: "judaism", name: "Jewish" },
+    { id: "buddhism", name: "Buddhist" },
+    { id: "sikhism", name: "Sikh" },
+  ];
+  
+  const languages = [
+    { id: "arabic", name: "Arabic" },
+    { id: "english", name: "English" },
+    { id: "sanskrit", name: "Sanskrit" },
+    { id: "hebrew", name: "Hebrew" },
+    { id: "greek", name: "Greek" },
+    { id: "latin", name: "Latin" },
+    { id: "french", name: "French" },
+    { id: "spanish", name: "Spanish" },
+  ];
+
   const [nameDetails, setNameDetails] = useState({
     name: "",
     meaning: "",
@@ -26,6 +69,9 @@ const ManageNames = () => {
     pronunciation: "",
     numerology: 0,
     zodiacSign: "",
+    seoTitle: "",
+    seoDescription: "",
+    seoKeywords: "",
   });
 
   const [activeTab, setActiveTab] = useState("basic");
@@ -35,6 +81,8 @@ const ManageNames = () => {
   const [newPersonality, setNewPersonality] = useState("");
   const [famousPeople, setFamousPeople] = useState([]);
   const [newFamous, setNewFamous] = useState({ name: "", description: "" });
+  const [nameFaqs, setNameFaqs] = useState([]);
+  const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
 
   const { toast } = useToast();
 
@@ -45,7 +93,8 @@ const ManageNames = () => {
       ...nameDetails,
       nameVariations,
       personality,
-      famousPeople
+      famousPeople,
+      nameFaqs
     });
     
     toast({
@@ -69,10 +118,14 @@ const ManageNames = () => {
       pronunciation: "",
       numerology: 0,
       zodiacSign: "",
+      seoTitle: "",
+      seoDescription: "",
+      seoKeywords: "",
     });
     setNameVariations([]);
     setPersonality([]);
     setFamousPeople([]);
+    setNameFaqs([]);
   };
   
   const addVariation = () => {
@@ -107,6 +160,17 @@ const ManageNames = () => {
   const removeFamousPerson = (index) => {
     setFamousPeople(famousPeople.filter((_, i) => i !== index));
   };
+  
+  const addFaq = () => {
+    if (newFaq.question.trim() && newFaq.answer.trim()) {
+      setNameFaqs([...nameFaqs, newFaq]);
+      setNewFaq({ question: "", answer: "" });
+    }
+  };
+  
+  const removeFaq = (index) => {
+    setNameFaqs(nameFaqs.filter((_, i) => i !== index));
+  };
 
   return (
     <div>
@@ -128,11 +192,13 @@ const ManageNames = () => {
         <CardContent>
           <form onSubmit={handleNameSubmit}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="attributes">Attributes</TabsTrigger>
                 <TabsTrigger value="variations">Variations</TabsTrigger>
                 <TabsTrigger value="famous">Famous People</TabsTrigger>
+                <TabsTrigger value="faqs">FAQs</TabsTrigger>
+                <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
               
               <TabsContent value="basic" className="space-y-4">
@@ -184,13 +250,9 @@ const ManageNames = () => {
                         <SelectValue placeholder="Select origin" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Indian">Indian</SelectItem>
-                        <SelectItem value="Arabic">Arabic</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="Hebrew">Hebrew</SelectItem>
-                        <SelectItem value="Greek">Greek</SelectItem>
-                        <SelectItem value="Latin">Latin</SelectItem>
-                        <SelectItem value="French">French</SelectItem>
+                        {origins.map(origin => (
+                          <SelectItem key={origin.id} value={origin.id}>{origin.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -205,12 +267,9 @@ const ManageNames = () => {
                         <SelectValue placeholder="Select religion" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Islam">Islam</SelectItem>
-                        <SelectItem value="Christianity">Christianity</SelectItem>
-                        <SelectItem value="Hinduism">Hinduism</SelectItem>
-                        <SelectItem value="Judaism">Judaism</SelectItem>
-                        <SelectItem value="Buddhism">Buddhism</SelectItem>
-                        <SelectItem value="Sikhism">Sikhism</SelectItem>
+                        {religions.map(religion => (
+                          <SelectItem key={religion.id} value={religion.id}>{religion.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -225,13 +284,9 @@ const ManageNames = () => {
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Arabic">Arabic</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="Sanskrit">Sanskrit</SelectItem>
-                        <SelectItem value="Hebrew">Hebrew</SelectItem>
-                        <SelectItem value="Greek">Greek</SelectItem>
-                        <SelectItem value="Latin">Latin</SelectItem>
-                        <SelectItem value="French">French</SelectItem>
+                        {languages.map(language => (
+                          <SelectItem key={language.id} value={language.id}>{language.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -474,6 +529,91 @@ const ManageNames = () => {
                       <Plus className="h-4 w-4 mr-2" />
                       Add Famous Person
                     </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="faqs" className="space-y-4">
+                <div className="space-y-4">
+                  <Label>FAQs Related to this Name</Label>
+                  <div className="flex flex-col gap-3 mb-4">
+                    {nameFaqs.map((faq, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                        <div className="flex-1">
+                          <p className="font-medium">{faq.question}</p>
+                          <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                        </div>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => removeFaq(index)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <Input 
+                      value={newFaq.question}
+                      onChange={(e) => setNewFaq({...newFaq, question: e.target.value})}
+                      placeholder="Question"
+                    />
+                    <Textarea 
+                      value={newFaq.answer}
+                      onChange={(e) => setNewFaq({...newFaq, answer: e.target.value})}
+                      placeholder="Answer"
+                      rows={3}
+                    />
+                    <Button type="button" onClick={addFaq} className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add FAQ
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="seo" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="seo-title">SEO Title</Label>
+                    <Input 
+                      id="seo-title" 
+                      value={nameDetails.seoTitle}
+                      onChange={(e) => setNameDetails({...nameDetails, seoTitle: e.target.value})}
+                      placeholder="e.g. Alexander Name Meaning and Origin | Baby Names"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended length: 50-60 characters. Current length: {nameDetails.seoTitle.length}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="seo-description">Meta Description</Label>
+                    <Textarea 
+                      id="seo-description" 
+                      value={nameDetails.seoDescription}
+                      onChange={(e) => setNameDetails({...nameDetails, seoDescription: e.target.value})}
+                      placeholder="e.g. Discover the meaning of the name Alexander, its origin, popularity, and more. Learn about famous people named Alexander and name variations."
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended length: 150-160 characters. Current length: {nameDetails.seoDescription.length}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="seo-keywords">Meta Keywords</Label>
+                    <Input 
+                      id="seo-keywords" 
+                      value={nameDetails.seoKeywords}
+                      onChange={(e) => setNameDetails({...nameDetails, seoKeywords: e.target.value})}
+                      placeholder="e.g. Alexander, name meaning, baby names, boy names"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Separate keywords with commas
+                    </p>
                   </div>
                 </div>
               </TabsContent>

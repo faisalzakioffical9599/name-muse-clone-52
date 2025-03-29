@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import ManageNames from "./pages/ManageNames";
@@ -7,7 +8,6 @@ import ManageFAQs from "./pages/ManageFAQs";
 import UserManagement from "./pages/UserManagement";
 import SiteSettings from "./pages/SiteSettings";
 import RegionalCategories from "./pages/RegionalCategories";
-import { useState } from "react";
 
 const Admin = () => {
   const [selectedTab, setSelectedTab] = useState("dashboard");
@@ -26,7 +26,7 @@ const Admin = () => {
         return <UserManagement />;
       case "settings":
         return <SiteSettings />;
-      case "categories":
+      case "regional":
         return <RegionalCategories />;
       default:
         return <Dashboard />;
