@@ -10,12 +10,35 @@ import { useToast } from "@/hooks/use-toast";
 import { Globe, Church, Languages, Plus, Trash2, Upload, Edit, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
+// Define proper interfaces for our data types
+interface CountryType {
+  id: string;
+  name: string;
+  count: number;
+  flag: string;
+  description: string;
+}
+
+interface ReligionType {
+  id: string;
+  name: string;
+  count: number;
+  description: string;
+}
+
+interface LanguageType {
+  id: string;
+  name: string;
+  count: number;
+  description: string;
+}
+
 const RegionalCategories = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("countries");
 
-  // Categories states
-  const [countries, setCountries] = useState([
+  // Categories states with proper typing
+  const [countries, setCountries] = useState<CountryType[]>([
     { id: "india", name: "Indian", count: 1250, flag: "", description: "Names originating from India, reflecting its rich cultural and linguistic diversity." },
     { id: "arabic", name: "Arabic", count: 980, flag: "", description: "Names with Arabic origins, often with deep meanings and historical significance." },
     { id: "english", name: "English", count: 875, flag: "", description: "Traditional and modern English names with Anglo-Saxon, Norman, and Celtic influences." },
@@ -26,7 +49,7 @@ const RegionalCategories = () => {
     { id: "irish", name: "Irish", count: 450, flag: "", description: "Traditional Irish names with Gaelic origins and Celtic heritage." },
   ]);
   
-  const [religions, setReligions] = useState([
+  const [religions, setReligions] = useState<ReligionType[]>([
     { id: "islam", name: "Islamic", count: 1450, description: "Names with Islamic significance, often derived from Arabic and with deep spiritual meanings." },
     { id: "christianity", name: "Christian", count: 1320, description: "Names with Christian heritage, including biblical names and saints' names." },
     { id: "hinduism", name: "Hindu", count: 980, description: "Names derived from Hindu deities, Sanskrit literature, and Indian traditions." },
@@ -35,7 +58,7 @@ const RegionalCategories = () => {
     { id: "sikhism", name: "Sikh", count: 290, description: "Names from Sikh traditions, often derived from Punjabi and Gurmukhi scripts." },
   ]);
   
-  const [languages, setLanguages] = useState([
+  const [languages, setLanguages] = useState<LanguageType[]>([
     { id: "arabic", name: "Arabic", count: 1150, description: "One of the world's oldest languages with rich poetic traditions and beautiful script." },
     { id: "english", name: "English", count: 1080, description: "A West Germanic language with global influence and extensive vocabulary." },
     { id: "sanskrit", name: "Sanskrit", count: 920, description: "Ancient Indian language with profound literary and cultural heritage." },
@@ -46,35 +69,35 @@ const RegionalCategories = () => {
     { id: "spanish", name: "Spanish", count: 430, description: "World's second-most spoken native language with rich literary traditions." },
   ]);
   
-  // New category form states
-  const [newCountry, setNewCountry] = useState({ id: "", name: "", count: 0, flag: "", description: "" });
-  const [newReligion, setNewReligion] = useState({ id: "", name: "", count: 0, description: "" });
-  const [newLanguage, setNewLanguage] = useState({ id: "", name: "", count: 0, description: "" });
+  // New category form states with proper default values
+  const [newCountry, setNewCountry] = useState<CountryType>({ id: "", name: "", count: 0, flag: "", description: "" });
+  const [newReligion, setNewReligion] = useState<ReligionType>({ id: "", name: "", count: 0, description: "" });
+  const [newLanguage, setNewLanguage] = useState<LanguageType>({ id: "", name: "", count: 0, description: "" });
 
-  // Edit States
-  const [editingCountry, setEditingCountry] = useState(null);
-  const [editingReligion, setEditingReligion] = useState(null);
-  const [editingLanguage, setEditingLanguage] = useState(null);
-  const [tempEditItem, setTempEditItem] = useState({});
+  // Edit States with proper typing
+  const [editingCountry, setEditingCountry] = useState<string | null>(null);
+  const [editingReligion, setEditingReligion] = useState<string | null>(null);
+  const [editingLanguage, setEditingLanguage] = useState<string | null>(null);
+  const [tempEditItem, setTempEditItem] = useState<CountryType | ReligionType | LanguageType>({ id: "", name: "", count: 0, description: "", flag: "" } as CountryType);
 
   // Dialog States
   const [showCountryDialog, setShowCountryDialog] = useState(false);
   const [showReligionDialog, setShowReligionDialog] = useState(false);
   const [showLanguageDialog, setShowLanguageDialog] = useState(false);
-  const [dialogMode, setDialogMode] = useState("add"); // "add" or "edit"
+  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
 
-  // Handle file uploads for flags
-  const handleFlagUpload = (e) => {
-    const file = e.target.files[0];
+  // Handle file uploads for flags - fix the type issue
+  const handleFlagUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       // In a real app, you would upload this to a server or storage
       // For this demo, we'll just create a data URL
       const reader = new FileReader();
       reader.onloadend = () => {
         if (dialogMode === "add") {
-          setNewCountry({ ...newCountry, flag: reader.result });
+          setNewCountry({ ...newCountry, flag: reader.result as string });
         } else if (dialogMode === "edit") {
-          setTempEditItem({ ...tempEditItem, flag: reader.result });
+          setTempEditItem({ ...tempEditItem, flag: reader.result as string } as CountryType);
         }
       };
       reader.readAsDataURL(file);
@@ -94,7 +117,7 @@ const RegionalCategories = () => {
     }
   };
   
-  const editCountry = (country) => {
+  const editCountry = (country: CountryType) => {
     setDialogMode("edit");
     setTempEditItem({ ...country });
     setEditingCountry(country.id);
@@ -104,11 +127,11 @@ const RegionalCategories = () => {
   const saveEditedCountry = () => {
     setCountries(
       countries.map((country) => 
-        country.id === editingCountry ? tempEditItem : country
+        country.id === editingCountry ? tempEditItem as CountryType : country
       )
     );
     setEditingCountry(null);
-    setTempEditItem({});
+    setTempEditItem({ id: "", name: "", count: 0, description: "", flag: "" } as CountryType);
     setShowCountryDialog(false);
     toast({
       title: "Country Updated",
@@ -116,7 +139,7 @@ const RegionalCategories = () => {
     });
   };
   
-  const removeCountry = (id) => {
+  const removeCountry = (id: string) => {
     setCountries(countries.filter(item => item.id !== id));
     toast({
       title: "Country Removed",
@@ -137,7 +160,7 @@ const RegionalCategories = () => {
     }
   };
   
-  const editReligion = (religion) => {
+  const editReligion = (religion: ReligionType) => {
     setDialogMode("edit");
     setTempEditItem({ ...religion });
     setEditingReligion(religion.id);
@@ -147,11 +170,11 @@ const RegionalCategories = () => {
   const saveEditedReligion = () => {
     setReligions(
       religions.map((religion) => 
-        religion.id === editingReligion ? tempEditItem : religion
+        religion.id === editingReligion ? tempEditItem as ReligionType : religion
       )
     );
     setEditingReligion(null);
-    setTempEditItem({});
+    setTempEditItem({ id: "", name: "", count: 0, description: "" } as ReligionType);
     setShowReligionDialog(false);
     toast({
       title: "Religion Updated",
@@ -159,7 +182,7 @@ const RegionalCategories = () => {
     });
   };
   
-  const removeReligion = (id) => {
+  const removeReligion = (id: string) => {
     setReligions(religions.filter(item => item.id !== id));
     toast({
       title: "Religion Removed",
@@ -180,7 +203,7 @@ const RegionalCategories = () => {
     }
   };
   
-  const editLanguage = (language) => {
+  const editLanguage = (language: LanguageType) => {
     setDialogMode("edit");
     setTempEditItem({ ...language });
     setEditingLanguage(language.id);
@@ -190,11 +213,11 @@ const RegionalCategories = () => {
   const saveEditedLanguage = () => {
     setLanguages(
       languages.map((language) => 
-        language.id === editingLanguage ? tempEditItem : language
+        language.id === editingLanguage ? tempEditItem as LanguageType : language
       )
     );
     setEditingLanguage(null);
-    setTempEditItem({});
+    setTempEditItem({ id: "", name: "", count: 0, description: "" } as LanguageType);
     setShowLanguageDialog(false);
     toast({
       title: "Language Updated",
@@ -202,7 +225,7 @@ const RegionalCategories = () => {
     });
   };
   
-  const removeLanguage = (id) => {
+  const removeLanguage = (id: string) => {
     setLanguages(languages.filter(item => item.id !== id));
     toast({
       title: "Language Removed",
@@ -213,16 +236,19 @@ const RegionalCategories = () => {
   // Open dialog functions
   const openAddCountryDialog = () => {
     setDialogMode("add");
+    setNewCountry({ id: "", name: "", count: 0, flag: "", description: "" });
     setShowCountryDialog(true);
   };
   
   const openAddReligionDialog = () => {
     setDialogMode("add");
+    setNewReligion({ id: "", name: "", count: 0, description: "" });
     setShowReligionDialog(true);
   };
   
   const openAddLanguageDialog = () => {
     setDialogMode("add");
+    setNewLanguage({ id: "", name: "", count: 0, description: "" });
     setShowLanguageDialog(true);
   };
 
@@ -416,7 +442,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="country-id" 
                   placeholder="e.g. french" 
-                  value={dialogMode === "add" ? newCountry.id : tempEditItem.id}
+                  value={dialogMode === "add" ? newCountry.id : (tempEditItem as CountryType).id}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewCountry({...newCountry, id: e.target.value})
                     : setTempEditItem({...tempEditItem, id: e.target.value})
@@ -429,7 +455,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="country-name" 
                   placeholder="e.g. French" 
-                  value={dialogMode === "add" ? newCountry.name : tempEditItem.name}
+                  value={dialogMode === "add" ? newCountry.name : (tempEditItem as CountryType).name}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewCountry({...newCountry, name: e.target.value})
                     : setTempEditItem({...tempEditItem, name: e.target.value})
@@ -443,7 +469,7 @@ const RegionalCategories = () => {
                 id="country-count" 
                 type="number"
                 placeholder="e.g. 100" 
-                value={dialogMode === "add" ? (newCountry.count || "") : (tempEditItem.count || "")}
+                value={dialogMode === "add" ? (newCountry.count || "") : ((tempEditItem as CountryType).count || "")}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewCountry({...newCountry, count: parseInt(e.target.value) || 0})
                   : setTempEditItem({...tempEditItem, count: parseInt(e.target.value) || 0})
@@ -460,10 +486,10 @@ const RegionalCategories = () => {
                   onChange={handleFlagUpload}
                   className="flex-1"
                 />
-                {(dialogMode === "add" ? newCountry.flag : tempEditItem.flag) && (
+                {(dialogMode === "add" ? newCountry.flag : (tempEditItem as CountryType).flag) && (
                   <div className="w-16 h-10 border rounded overflow-hidden">
                     <img 
-                      src={dialogMode === "add" ? newCountry.flag : tempEditItem.flag} 
+                      src={dialogMode === "add" ? newCountry.flag : (tempEditItem as CountryType).flag} 
                       alt="Flag preview" 
                       className="w-full h-full object-cover"
                     />
@@ -477,7 +503,7 @@ const RegionalCategories = () => {
                 id="country-description" 
                 placeholder="Description for SEO purposes" 
                 rows={3}
-                value={dialogMode === "add" ? newCountry.description : tempEditItem.description}
+                value={dialogMode === "add" ? newCountry.description : (tempEditItem as CountryType).description}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewCountry({...newCountry, description: e.target.value})
                   : setTempEditItem({...tempEditItem, description: e.target.value})
@@ -512,7 +538,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="religion-id" 
                   placeholder="e.g. buddhism" 
-                  value={dialogMode === "add" ? newReligion.id : tempEditItem.id}
+                  value={dialogMode === "add" ? newReligion.id : (tempEditItem as ReligionType).id}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewReligion({...newReligion, id: e.target.value})
                     : setTempEditItem({...tempEditItem, id: e.target.value})
@@ -525,7 +551,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="religion-name" 
                   placeholder="e.g. Buddhist" 
-                  value={dialogMode === "add" ? newReligion.name : tempEditItem.name}
+                  value={dialogMode === "add" ? newReligion.name : (tempEditItem as ReligionType).name}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewReligion({...newReligion, name: e.target.value})
                     : setTempEditItem({...tempEditItem, name: e.target.value})
@@ -539,7 +565,7 @@ const RegionalCategories = () => {
                 id="religion-count" 
                 type="number"
                 placeholder="e.g. 100" 
-                value={dialogMode === "add" ? (newReligion.count || "") : (tempEditItem.count || "")}
+                value={dialogMode === "add" ? (newReligion.count || "") : ((tempEditItem as ReligionType).count || "")}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewReligion({...newReligion, count: parseInt(e.target.value) || 0})
                   : setTempEditItem({...tempEditItem, count: parseInt(e.target.value) || 0})
@@ -552,7 +578,7 @@ const RegionalCategories = () => {
                 id="religion-description" 
                 placeholder="Description for SEO purposes" 
                 rows={3}
-                value={dialogMode === "add" ? newReligion.description : tempEditItem.description}
+                value={dialogMode === "add" ? newReligion.description : (tempEditItem as ReligionType).description}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewReligion({...newReligion, description: e.target.value})
                   : setTempEditItem({...tempEditItem, description: e.target.value})
@@ -587,7 +613,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="language-id" 
                   placeholder="e.g. spanish" 
-                  value={dialogMode === "add" ? newLanguage.id : tempEditItem.id}
+                  value={dialogMode === "add" ? newLanguage.id : (tempEditItem as LanguageType).id}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewLanguage({...newLanguage, id: e.target.value})
                     : setTempEditItem({...tempEditItem, id: e.target.value})
@@ -600,7 +626,7 @@ const RegionalCategories = () => {
                 <Input 
                   id="language-name" 
                   placeholder="e.g. Spanish" 
-                  value={dialogMode === "add" ? newLanguage.name : tempEditItem.name}
+                  value={dialogMode === "add" ? newLanguage.name : (tempEditItem as LanguageType).name}
                   onChange={(e) => dialogMode === "add" 
                     ? setNewLanguage({...newLanguage, name: e.target.value})
                     : setTempEditItem({...tempEditItem, name: e.target.value})
@@ -614,7 +640,7 @@ const RegionalCategories = () => {
                 id="language-count" 
                 type="number"
                 placeholder="e.g. 100" 
-                value={dialogMode === "add" ? (newLanguage.count || "") : (tempEditItem.count || "")}
+                value={dialogMode === "add" ? (newLanguage.count || "") : ((tempEditItem as LanguageType).count || "")}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewLanguage({...newLanguage, count: parseInt(e.target.value) || 0})
                   : setTempEditItem({...tempEditItem, count: parseInt(e.target.value) || 0})
@@ -627,7 +653,7 @@ const RegionalCategories = () => {
                 id="language-description" 
                 placeholder="Description for SEO purposes" 
                 rows={3}
-                value={dialogMode === "add" ? newLanguage.description : tempEditItem.description}
+                value={dialogMode === "add" ? newLanguage.description : (tempEditItem as LanguageType).description}
                 onChange={(e) => dialogMode === "add" 
                   ? setNewLanguage({...newLanguage, description: e.target.value})
                   : setTempEditItem({...tempEditItem, description: e.target.value})
