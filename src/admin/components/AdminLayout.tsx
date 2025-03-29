@@ -1,19 +1,32 @@
 
-import Header from "../../components/Header";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Database, FileText, HelpCircle, User, Settings } from "lucide-react";
+import {
+  Home,
+  Database,
+  FileText,
+  HelpCircle,
+  User,
+  Settings,
+  Globe,
+  Book
+} from "lucide-react";
 
-interface AdminLayoutProps {
+export interface AdminLayoutProps {
+  children: React.ReactNode;
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  children: React.ReactNode;
+  headerContent?: React.ReactNode;
 }
 
-const AdminLayout = ({ selectedTab, setSelectedTab, children }: AdminLayoutProps) => {
+const AdminLayout = ({ 
+  children, 
+  selectedTab, 
+  setSelectedTab,
+  headerContent
+}: AdminLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      
       <div className="pt-24 md:pt-28 pb-16 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -87,12 +100,39 @@ const AdminLayout = ({ selectedTab, setSelectedTab, children }: AdminLayoutProps
                         Settings
                       </Button>
                     </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "regional" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("regional")}
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        Regional Categories
+                      </Button>
+                    </li>
+                    <li>
+                      <Button 
+                        variant={selectedTab === "stories" ? "secondary" : "ghost"} 
+                        className="w-full justify-start"
+                        onClick={() => setSelectedTab("stories")}
+                      >
+                        <Book className="h-4 w-4 mr-2" />
+                        Name Stories
+                      </Button>
+                    </li>
                   </ul>
                 </nav>
               </div>
               
               {/* Main Content */}
               <div className="flex-1 p-6">
+                {/* Header content (search etc) */}
+                {headerContent && (
+                  <div className="mb-6">
+                    {headerContent}
+                  </div>
+                )}
+                
                 {children}
               </div>
             </div>

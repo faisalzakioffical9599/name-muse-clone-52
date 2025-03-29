@@ -8,6 +8,7 @@ import ManageFAQs from "./pages/ManageFAQs";
 import UserManagement from "./pages/UserManagement";
 import SiteSettings from "./pages/SiteSettings";
 import RegionalCategories from "./pages/RegionalCategories";
+import NameStories from "./pages/NameStories";
 import SearchBar from "../components/SearchBar";
 import { FilterOptions } from "../components/SearchFilter";
 
@@ -35,7 +36,7 @@ const Admin = () => {
       case "dashboard":
         return <Dashboard />;
       case "names":
-        return <ManageNames searchProps={searchProps} />;
+        return <ManageNames />;
       case "content":
         return <PageContent />;
       case "faqs":
@@ -45,14 +46,16 @@ const Admin = () => {
       case "settings":
         return <SiteSettings />;
       case "regional":
-        return <RegionalCategories searchProps={searchProps} />;
+        return <RegionalCategories />;
+      case "stories":
+        return <NameStories searchProps={searchProps} />;
       default:
         return <Dashboard />;
     }
   };
 
   // Only show search in relevant sections
-  const showSearch = ["names", "faqs", "regional"].includes(selectedTab);
+  const showSearch = ["names", "faqs", "regional", "stories"].includes(selectedTab);
 
   return (
     <AdminLayout 
@@ -65,7 +68,7 @@ const Admin = () => {
             onSearch={handleSearch}
           />
         </div>
-      ) : null}
+      ) : undefined}
     >
       {renderContent()}
     </AdminLayout>

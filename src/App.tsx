@@ -15,6 +15,7 @@ import BabyNameMatcher from "./pages/BabyNameMatcher";
 import NameDetail from "./pages/NameDetail";
 import CategoryNames from "./pages/CategoryNames";
 import FamousPersonalities from "./pages/FamousPersonalities";
+import NameStories from "./pages/NameStories";
 import Admin from "./admin/index";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/love-calculator" element={<LoveCalculator />} />
           <Route path="/baby-name-matcher" element={<BabyNameMatcher />} />
           <Route path="/famous-personalities" element={<FamousPersonalities />} />
+          <Route path="/name-stories" element={<NameStories />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/name/:nameId" element={<NameDetail />} />
           <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
