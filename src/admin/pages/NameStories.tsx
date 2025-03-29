@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { FilterOptions } from "@/components/SearchFilter";
 
 // Mock initial data - would be fetched from API in real app
 const mockStories = [
@@ -50,11 +50,9 @@ interface NameStory {
   imageUrl: string;
 }
 
-interface SearchProps {
+export interface SearchProps {
   searchQuery: string;
-  searchFilters: {
-    [key: string]: string;
-  };
+  searchFilters: FilterOptions;
 }
 
 const NameStories = ({ searchProps }: { searchProps?: SearchProps }) => {

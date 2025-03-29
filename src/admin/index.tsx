@@ -8,7 +8,7 @@ import ManageFAQs from "./pages/ManageFAQs";
 import UserManagement from "./pages/UserManagement";
 import SiteSettings from "./pages/SiteSettings";
 import RegionalCategories from "./pages/RegionalCategories";
-import NameStories from "./pages/NameStories";
+import NameStories, { SearchProps } from "./pages/NameStories";
 import SearchBar from "../components/SearchBar";
 import { FilterOptions } from "../components/SearchFilter";
 
@@ -27,7 +27,7 @@ const Admin = () => {
   const renderContent = () => {
     // For simplicity, we'll pass search props to each component
     // In a real app, we might use context or other state management
-    const searchProps = {
+    const searchProps: SearchProps = {
       searchQuery, 
       searchFilters,
     };
