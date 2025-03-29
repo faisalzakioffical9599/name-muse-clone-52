@@ -1,28 +1,14 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import SearchBar from "../components/SearchBar";
 import NameCard from "../components/NameCard";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Filter } from "lucide-react";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger 
-} from "@/components/ui/sheet";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Sparkles } from "lucide-react";
+import { FilterOptions } from "../components/SearchFilter";
 
 const UniqueNames = () => {
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // Mock data for unique names
-  const uniqueNames = [
+  const allUniqueNames = [
     {
       id: "u1",
       name: "Zephyr",
@@ -97,11 +83,61 @@ const UniqueNames = () => {
     },
   ];
 
+  const [displayedNames, setDisplayedNames] = useState(allUniqueNames);
+  const [activeFilters, setActiveFilters] = useState<FilterOptions>({});
+
+  const handleSearch = (searchTerm: string, filters: FilterOptions) => {
+    let filteredNames = [...allUniqueNames];
+    
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filteredNames = filteredNames.filter(name => 
+        name.name.toLowerCase().includes(searchLower) || 
+        name.meaning.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (filters.gender && filters.gender !== "all") {
+      filteredNames = filteredNames.filter(name => name.gender === filters.gender);
+    }
+    
+    if (filters.countries && filters.countries.length > 0) {
+      filteredNames = filteredNames.filter(name => 
+        filters.countries!.includes(name.origin)
+      );
+    }
+    
+    if (filters.religions && filters.religions.length > 0) {
+      filteredNames = filteredNames.filter(name => 
+        filters.religions!.includes(name.religion)
+      );
+    }
+    
+    if (filters.languages && filters.languages.length > 0) {
+      filteredNames = filteredNames.filter(name => 
+        filters.languages!.includes(name.language)
+      );
+    }
+    
+    if (filters.sortBy) {
+      switch (filters.sortBy) {
+        case "alphabetical-asc":
+          filteredNames.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case "alphabetical-desc":
+          filteredNames.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+      }
+    }
+    
+    setDisplayedNames(filteredNames);
+    setActiveFilters(filters);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-8 px-4 bg-gradient-to-b from-purple-50 to-white">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center">
@@ -112,121 +148,42 @@ const UniqueNames = () => {
               Discover unusual and distinctive names that will make your child stand out
             </p>
             
-            {/* Search Bar */}
-            <SearchBar className="mb-8" />
+            <SearchBar 
+              className="mb-8" 
+              placeholder="Search for unique names..."
+              onSearch={handleSearch}
+            />
           </div>
         </div>
       </section>
       
-      {/* Main Content */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-5xl">
-          {/* Filters and Sorting */}
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold flex items-center">
               <Sparkles className="h-5 w-5 mr-2 text-purple-500" />
               Unique Names
+              {displayedNames.length < allUniqueNames.length && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({displayedNames.length} results)
+                </span>
+              )}
             </h2>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Filter Names</SheetTitle>
-                  <SheetDescription>
-                    Refine names by gender, origin, and more
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="py-4 space-y-6">
-                  {/* Gender Filter */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Gender</h3>
-                    <RadioGroup defaultValue="all">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="all" id="gender-all" />
-                        <Label htmlFor="gender-all">All</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="boy" id="gender-boy" />
-                        <Label htmlFor="gender-boy">Boy</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="girl" id="gender-girl" />
-                        <Label htmlFor="gender-girl">Girl</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="unisex" id="gender-unisex" />
-                        <Label htmlFor="gender-unisex">Unisex</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  
-                  {/* Origin Filter */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Origin</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="origin-greek" />
-                        <Label htmlFor="origin-greek">Greek</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="origin-latin" />
-                        <Label htmlFor="origin-latin">Latin</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="origin-persian" />
-                        <Label htmlFor="origin-persian">Persian</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="origin-celtic" />
-                        <Label htmlFor="origin-celtic">Celtic</Label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Length Filter */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Name Length</h3>
-                    <RadioGroup defaultValue="any">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="any" id="length-any" />
-                        <Label htmlFor="length-any">Any length</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="short" id="length-short" />
-                        <Label htmlFor="length-short">Short (1-4 letters)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="medium" id="length-medium" />
-                        <Label htmlFor="length-medium">Medium (5-7 letters)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="long" id="length-long" />
-                        <Label htmlFor="length-long">Long (8+ letters)</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  
-                  <div className="flex justify-end pt-4">
-                    <Button>Apply Filters</Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
           </div>
 
-          {/* Name Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {uniqueNames.map(name => (
-              <NameCard key={name.id} {...name} />
-            ))}
-          </div>
+          {displayedNames.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedNames.map(name => (
+                <NameCard key={name.id} {...name} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-lg text-muted-foreground mb-4">No names found matching your search criteria.</p>
+              <Button onClick={() => handleSearch("", {})}>Clear Filters</Button>
+            </div>
+          )}
           
-          {/* SEO Content */}
           <div className="mt-16 prose max-w-none">
             <h2>What Makes a Name Unique?</h2>
             <p>
@@ -270,7 +227,6 @@ const UniqueNames = () => {
         </div>
       </section>
       
-      {/* Simplified Footer */}
       <footer className="py-8 px-4 border-t border-gray-200">
         <div className="container mx-auto max-w-5xl text-center">
           <p className="text-sm text-gray-500">
