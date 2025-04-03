@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, LogIn } from "lucide-react";
+import { Lock, LogIn, KeyRound } from "lucide-react";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -23,6 +23,14 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Check if user is already logged in on component mount
+  useEffect(() => {
+    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+    if (adminLoggedIn) {
+      onLogin();
+    }
+  }, [onLogin]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +60,15 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     <div className="flex items-center justify-center min-h-[80vh]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-2">
+            <KeyRound className="h-12 w-12 text-primary" />
+          </div>
           <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access the admin panel
+          </CardDescription>
+          <CardDescription className="text-center font-semibold text-primary">
+            Username: admin / Password: password
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>

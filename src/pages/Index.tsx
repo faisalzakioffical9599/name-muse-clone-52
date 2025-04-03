@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Baby, HeartHandshake } from "lucide-react";
@@ -8,6 +7,7 @@ import AlphabetNav from "../components/AlphabetNav";
 import FeaturedNames from "../components/FeaturedNames";
 import RegionalCategories from "../components/RegionalCategories";
 import NameCard from "../components/NameCard";
+import AdminLink from "@/components/AdminLink";
 
 const Index = () => {
   const [selectedLetter, setSelectedLetter] = useState<string | undefined>(undefined);
@@ -90,7 +90,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header>
+        <div className="ml-auto">
+          <AdminLink />
+        </div>
+      </Header>
       
       {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-16 md:pb-24 px-4">
@@ -215,7 +219,7 @@ const Index = () => {
           <div className="text-center mt-10">
             <Link 
               to="/all-names"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 font-medium"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
             >
               Explore All Names
               <ArrowRight size={16} className="ml-2" />

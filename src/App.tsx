@@ -27,7 +27,14 @@ import UnisexNames from "./pages/UnisexNames";
 import Admin from "./admin/index";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <React.StrictMode>
