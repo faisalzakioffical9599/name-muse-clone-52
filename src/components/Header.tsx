@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { 
   Search, 
@@ -41,7 +41,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const Header = () => {
+interface HeaderProps {
+  children?: ReactNode;
+}
+
+const Header = ({ children }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -108,7 +112,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex md:items-center md:space-x-4">
             <NavigationMenu>
               <NavigationMenuList>
                 {/* Baby Names Dropdown */}
@@ -264,15 +268,21 @@ const Header = () => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            
+            {/* Render children if they exist */}
+            {children}
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-gray-700 hover:text-primary transition-colors duration-200"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            {children}
+            <button 
+              className="text-gray-700 hover:text-primary transition-colors duration-200"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
