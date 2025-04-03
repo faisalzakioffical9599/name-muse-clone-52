@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
@@ -57,6 +56,16 @@ const AllNames = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth"
+    });
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      gender: "all",
+      countries: [],
+      religions: [],
+      languages: [],
+      sortBy: "alphabetical-asc"
     });
   };
 
