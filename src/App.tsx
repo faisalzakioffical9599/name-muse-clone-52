@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import AllNames from "./pages/AllNames";
 import BoyNames from "./pages/BoyNames";
@@ -52,10 +52,17 @@ const App = () => (
           <Route path="/name-pronunciation" element={<NamePronunciation />} />
           <Route path="/trending-names" element={<TrendingNames />} />
           <Route path="/birth-calculator" element={<BirthCalculator />} />
-          <Route path="/admin" element={<Admin />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/*" element={<Admin />} />
+          
           <Route path="/name/:nameId" element={<NameDetail />} />
           <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Redirects */}
+          <Route path="/admin" element={<Navigate to="/admin?tab=dashboard" />} />
+          
+          {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "./components/AdminLayout";
+import AdminLogin from "./components/AdminLogin";
+import AdminDashboard from "./components/AdminDashboard";
 import Dashboard from "./pages/Dashboard";
 import ManageNames from "./pages/ManageNames";
 import PageContent from "./pages/PageContent";
@@ -17,17 +19,45 @@ import TrendingNames from "./pages/TrendingNames";
 import BirthCalculator from "./pages/BirthCalculator";
 import SearchBar from "../components/SearchBar";
 import { FilterOptions } from "../components/SearchFilter";
+import { useSearchParams } from "react-router-dom";
 
 const Admin = () => {
-  const [selectedTab, setSelectedTab] = useState("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedTab, setSelectedTab] = useState(() => {
+    const tabFromUrl = searchParams.get("tab");
+    return tabFromUrl || "dashboard";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilters, setSearchFilters] = useState<FilterOptions>({});
+
+  // Check if user is logged in on component mount
+  useEffect(() => {
+    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+    setIsLoggedIn(adminLoggedIn);
+  }, []);
+
+  // Update URL when tab changes
+  useEffect(() => {
+    setSearchParams({ tab: selectedTab });
+  }, [selectedTab, setSearchParams]);
+
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
 
   const handleSearch = (searchTerm: string, filters: FilterOptions) => {
     setSearchQuery(searchTerm);
     setSearchFilters(filters);
     console.log("Admin search:", searchTerm, filters);
-    // This could be passed to the active component
   };
 
   const renderContent = () => {
@@ -40,7 +70,7 @@ const Admin = () => {
 
     switch (selectedTab) {
       case "dashboard":
-        return <Dashboard />;
+        return <AdminDashboard />;
       case "names":
         return <ManageNames />;
       case "content":
@@ -68,17 +98,22 @@ const Admin = () => {
       case "birthcalc":
         return <BirthCalculator />;
       default:
-        return <Dashboard />;
+        return <AdminDashboard />;
     }
   };
 
   // Only show search in relevant sections
   const showSearch = ["names", "faqs", "regional", "stories", "trending"].includes(selectedTab);
 
+  if (!isLoggedIn) {
+    return <AdminLogin onLogin={handleLogin} />;
+  }
+
   return (
     <AdminLayout 
       selectedTab={selectedTab} 
-      setSelectedTab={setSelectedTab}
+      setSelectedTab={handleTabChange}
+      onLogout={handleLogout}
       headerContent={showSearch ? (
         <div className="w-full max-w-md">
           <SearchBar 
