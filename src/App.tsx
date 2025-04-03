@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,45 +30,47 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/all-names" element={<AllNames />} />
-          <Route path="/boy-names" element={<BoyNames />} />
-          <Route path="/girl-names" element={<GirlNames />} />
-          <Route path="/unique-names" element={<UniqueNames />} />
-          <Route path="/unisex-names" element={<UnisexNames />} />
-          <Route path="/name-meanings" element={<NameMeanings />} />
-          <Route path="/love-calculator" element={<LoveCalculator />} />
-          <Route path="/baby-name-matcher" element={<BabyNameMatcher />} />
-          <Route path="/famous-personalities" element={<FamousPersonalities />} />
-          <Route path="/name-stories" element={<NameStories />} />
-          <Route path="/name-combiner" element={<NameCombiner />} />
-          <Route path="/name-compatibility" element={<NameCompatibility />} />
-          <Route path="/name-favorites" element={<NameFavorites />} />
-          <Route path="/name-pronunciation" element={<NamePronunciation />} />
-          <Route path="/trending-names" element={<TrendingNames />} />
-          <Route path="/birth-calculator" element={<BirthCalculator />} />
-          
-          {/* Admin routes */}
-          <Route path="/admin/*" element={<Admin />} />
-          
-          <Route path="/name/:nameId" element={<NameDetail />} />
-          <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
-          
-          {/* Redirects */}
-          <Route path="/admin" element={<Navigate to="/admin?tab=dashboard" />} />
-          
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/all-names" element={<AllNames />} />
+            <Route path="/boy-names" element={<BoyNames />} />
+            <Route path="/girl-names" element={<GirlNames />} />
+            <Route path="/unique-names" element={<UniqueNames />} />
+            <Route path="/unisex-names" element={<UnisexNames />} />
+            <Route path="/name-meanings" element={<NameMeanings />} />
+            <Route path="/love-calculator" element={<LoveCalculator />} />
+            <Route path="/baby-name-matcher" element={<BabyNameMatcher />} />
+            <Route path="/famous-personalities" element={<FamousPersonalities />} />
+            <Route path="/name-stories" element={<NameStories />} />
+            <Route path="/name-combiner" element={<NameCombiner />} />
+            <Route path="/name-compatibility" element={<NameCompatibility />} />
+            <Route path="/name-favorites" element={<NameFavorites />} />
+            <Route path="/name-pronunciation" element={<NamePronunciation />} />
+            <Route path="/trending-names" element={<TrendingNames />} />
+            <Route path="/birth-calculator" element={<BirthCalculator />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin/*" element={<Admin />} />
+            
+            <Route path="/name/:nameId" element={<NameDetail />} />
+            <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
+            
+            {/* Redirects */}
+            <Route path="/admin" element={<Navigate to="/admin?tab=dashboard" />} />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
