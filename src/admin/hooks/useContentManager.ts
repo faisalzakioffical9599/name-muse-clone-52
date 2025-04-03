@@ -57,7 +57,7 @@ export function useContentManager<T extends ContentItem>({
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    } as T;
+    } as unknown as T;
     
     setItems(prevItems => [...prevItems, newItem]);
     return newItem;
@@ -96,7 +96,7 @@ export function useContentManager<T extends ContentItem>({
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    })) as T[];
+    })) as unknown as T[];
     
     setItems(prevItems => [...prevItems, ...itemsWithIds]);
     return itemsWithIds;

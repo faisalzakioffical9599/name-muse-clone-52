@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,8 @@ import {
   X,
   Check,
   Download,
-  Upload
+  Upload,
+  Plus
 } from "lucide-react";
 import { SelectContent, SelectItem, SelectTrigger, SelectValue, Select } from "@/components/ui/select";
 
@@ -65,7 +65,6 @@ function DataTable<T>({
   const [sortColumn, setSortColumn] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  // Filter data based on search term
   const filteredData = searchTerm
     ? data.filter((item) =>
         columns.some((column) => {
@@ -75,7 +74,6 @@ function DataTable<T>({
       )
     : data;
 
-  // Sort data
   const sortedData = sortColumn
     ? [...filteredData].sort((a, b) => {
         const aValue = a[sortColumn];
@@ -87,7 +85,6 @@ function DataTable<T>({
       })
     : filteredData;
 
-  // Pagination
   const totalPages = Math.ceil(sortedData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedData = sortedData.slice(startIndex, startIndex + pageSize);
@@ -265,7 +262,6 @@ function DataTable<T>({
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum = i + 1;
                 
-                // For more than 5 pages, adjust the display
                 if (totalPages > 5) {
                   if (currentPage <= 3) {
                     pageNum = i + 1;
