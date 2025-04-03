@@ -16,7 +16,10 @@ import {
   Globe, 
   Calculator, 
   BarChart,
-  ChevronDown
+  ChevronDown,
+  Newspaper,
+  PenTool,
+  GraduationCap
 } from "lucide-react";
 import {
   NavigationMenu,
@@ -27,6 +30,15 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const Header = () => {
@@ -99,17 +111,20 @@ const Header = () => {
           <div className="hidden md:block">
             <NavigationMenu>
               <NavigationMenuList>
+                {/* Baby Names Dropdown */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Baby Names</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>Names</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                       <ListItem 
                         href="/boy-names" 
                         title="Boy Names"
+                        icon={Baby}
                       />
                       <ListItem 
                         href="/girl-names" 
                         title="Girl Names"
+                        icon={Baby}
                       />
                       <ListItem 
                         href="/unique-names" 
@@ -124,6 +139,7 @@ const Header = () => {
                       <ListItem 
                         href="/all-names" 
                         title="Browse All Names"
+                        icon={Book}
                       />
                       <ListItem 
                         href="/name-meanings" 
@@ -134,13 +150,47 @@ const Header = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 
+                {/* Categories Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      <ListItem 
+                        href="/country/all" 
+                        title="By Country"
+                        icon={Globe}
+                        children="Explore names by their country of origin"
+                      />
+                      <ListItem 
+                        href="/religion/all" 
+                        title="By Religion"
+                        icon={Book}
+                        children="Discover names associated with different religions"
+                      />
+                      <ListItem 
+                        href="/language/all" 
+                        title="By Language"
+                        icon={GraduationCap}
+                        children="Browse names from various language roots"
+                      />
+                      <ListItem 
+                        href="/trending-names" 
+                        title="Trending Names"
+                        icon={BarChart}
+                        children="Popular and trending baby names by region"
+                      />
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+                
+                {/* Tools Dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Tools</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                       <ListItem 
                         href="/baby-name-matcher" 
-                        title="Baby Name Matcher"
+                        title="Name Matcher"
                         icon={Baby}
                         children="Find the perfect baby name that matches your preferences"
                       />
@@ -157,44 +207,6 @@ const Header = () => {
                         children="Check compatibility between sibling names"
                       />
                       <ListItem 
-                        href="/love-calculator" 
-                        title="Love Calculator"
-                        icon={Heart}
-                        children="Calculate the love compatibility between two names"
-                      />
-                      <ListItem 
-                        href="/birth-calculator" 
-                        title="Birth Calculator"
-                        icon={Calculator}
-                        children="Get name suggestions based on birth date and astrology"
-                      />
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-                
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Discover</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      <ListItem 
-                        href="/trending-names" 
-                        title="Trending Names"
-                        icon={BarChart}
-                        children="Explore popular names trending in different regions"
-                      />
-                      <ListItem 
-                        href="/famous-personalities" 
-                        title="Famous Personalities"
-                        icon={User}
-                        children="Discover names of famous personalities and celebrities"
-                      />
-                      <ListItem 
-                        href="/name-stories" 
-                        title="Name Stories"
-                        icon={Book}
-                        children="Read cultural stories and backgrounds of different names"
-                      />
-                      <ListItem 
                         href="/name-pronunciation" 
                         title="Pronunciation Guide"
                         icon={Music}
@@ -204,21 +216,50 @@ const Header = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 
+                {/* Explore Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Explore</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      <ListItem 
+                        href="/articles" 
+                        title="Articles"
+                        icon={Newspaper}
+                        children="Read informative articles about naming traditions"
+                      />
+                      <ListItem 
+                        href="/famous-personalities" 
+                        title="Famous Names"
+                        icon={User}
+                        children="Discover names of famous personalities"
+                      />
+                      <ListItem 
+                        href="/name-stories" 
+                        title="Name Stories"
+                        icon={Book}
+                        children="Read the stories behind different names"
+                      />
+                      <ListItem 
+                        href="/birth-calculator" 
+                        title="Birth Calculator"
+                        icon={Calculator}
+                        children="Get name suggestions based on birth date"
+                      />
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+                
+                {/* Favorites */}
                 <NavigationMenuItem>
                   <Link to="/name-favorites" className={navigationMenuTriggerStyle()}>
                     <Heart className="h-4 w-4 mr-1" /> Favorites
                   </Link>
                 </NavigationMenuItem>
                 
+                {/* Search */}
                 <NavigationMenuItem>
                   <Link to="/search" className={navigationMenuTriggerStyle()}>
                     <Search className="h-4 w-4 mr-1" /> Search
-                  </Link>
-                </NavigationMenuItem>
-                
-                <NavigationMenuItem className="hidden lg:flex">
-                  <Link to="/admin" className={navigationMenuTriggerStyle()}>
-                    <Settings className="h-4 w-4 mr-1" /> Admin
                   </Link>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -241,7 +282,7 @@ const Header = () => {
           <div className="container mx-auto px-4">
             <nav className="flex flex-col space-y-1">
               <div className="border-b border-gray-100 pb-2 mb-2">
-                <div className="font-medium text-sm px-2 py-1 text-gray-500">Baby Names</div>
+                <div className="font-medium text-sm px-2 py-1 text-gray-500">Names</div>
                 <Link 
                   to="/boy-names" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 block"
@@ -264,18 +305,43 @@ const Header = () => {
                   <Sparkles size={14} className="mr-1" /> Unique Names
                 </Link>
                 <Link 
-                  to="/unisex-names" 
+                  to="/all-names" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Star size={14} className="mr-1" /> Unisex Names
+                  <Book size={14} className="mr-1" /> All Names
+                </Link>
+              </div>
+              
+              <div className="border-b border-gray-100 pb-2 mb-2">
+                <div className="font-medium text-sm px-2 py-1 text-gray-500">Categories</div>
+                <Link 
+                  to="/country/all" 
+                  className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Globe size={14} className="mr-1" /> By Country
                 </Link>
                 <Link 
-                  to="/name-meanings" 
+                  to="/religion/all" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Book size={14} className="mr-1" /> Name Meanings
+                  <Book size={14} className="mr-1" /> By Religion
+                </Link>
+                <Link 
+                  to="/language/all" 
+                  className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <GraduationCap size={14} className="mr-1" /> By Language
+                </Link>
+                <Link 
+                  to="/trending-names" 
+                  className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <BarChart size={14} className="mr-1" /> Trending Names
                 </Link>
               </div>
               
@@ -286,7 +352,7 @@ const Header = () => {
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Baby size={14} className="mr-1" /> Baby Name Matcher
+                  <Baby size={14} className="mr-1" /> Name Matcher
                 </Link>
                 <Link 
                   to="/name-combiner" 
@@ -303,36 +369,29 @@ const Header = () => {
                   <Star size={14} className="mr-1" /> Name Compatibility
                 </Link>
                 <Link 
-                  to="/love-calculator" 
+                  to="/name-pronunciation" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Heart size={14} className="mr-1" /> Love Calculator
-                </Link>
-                <Link 
-                  to="/birth-calculator" 
-                  className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Calculator size={14} className="mr-1" /> Birth Calculator
+                  <Music size={14} className="mr-1" /> Pronunciation Guide
                 </Link>
               </div>
               
               <div className="border-b border-gray-100 pb-2 mb-2">
-                <div className="font-medium text-sm px-2 py-1 text-gray-500">Discover</div>
+                <div className="font-medium text-sm px-2 py-1 text-gray-500">Explore</div>
                 <Link 
-                  to="/trending-names" 
+                  to="/articles" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <BarChart size={14} className="mr-1" /> Trending Names
+                  <Newspaper size={14} className="mr-1" /> Articles
                 </Link>
                 <Link 
                   to="/famous-personalities" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <User size={14} className="mr-1" /> Famous Personalities
+                  <User size={14} className="mr-1" /> Famous Names
                 </Link>
                 <Link 
                   to="/name-stories" 
@@ -342,11 +401,11 @@ const Header = () => {
                   <Book size={14} className="mr-1" /> Name Stories
                 </Link>
                 <Link 
-                  to="/name-pronunciation" 
+                  to="/birth-calculator" 
                   className="text-sm font-medium hover:text-primary transition-colors duration-200 py-2 px-4 flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Music size={14} className="mr-1" /> Pronunciation
+                  <Calculator size={14} className="mr-1" /> Birth Calculator
                 </Link>
               </div>
               
