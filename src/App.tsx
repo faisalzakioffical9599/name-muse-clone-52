@@ -62,14 +62,11 @@ const App = () => (
             <Route path="/trending-names" element={<TrendingNames />} />
             <Route path="/birth-calculator" element={<BirthCalculator />} />
             
-            {/* Admin routes */}
+            {/* Admin routes - removing conflict with pages/Admin.tsx */}
             <Route path="/admin/*" element={<Admin />} />
             
             <Route path="/name/:nameId" element={<NameDetail />} />
             <Route path="/:categoryType/:categoryId" element={<CategoryNames />} />
-            
-            {/* Redirects */}
-            <Route path="/admin" element={<Navigate to="/admin?tab=dashboard" />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
