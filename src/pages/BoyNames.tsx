@@ -12,7 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
-import NameCard from "../components/NameCard";
+import NameCard, { NameCardProps } from "../components/NameCard";
 import SearchBar from "../components/SearchBar";
 import PopularNamesSidebar from "../components/PopularNamesSidebar";
 import { clientApi } from "../services/clientApi";
@@ -50,10 +50,20 @@ const BoyNames = () => {
         });
         
         if (response && response.data) {
+          const typedData = response.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            meaning: item.meaning,
+            gender: item.gender as "boy" | "girl" | "unisex",
+            origin: item.origin,
+            religion: item.religion,
+            language: item.language
+          }));
+          
           if (page === 1) {
-            setBoyNames(response.data);
+            setBoyNames(typedData);
           } else {
-            setBoyNames(prev => [...prev, ...response.data]);
+            setBoyNames(prev => [...prev, ...typedData]);
           }
           
           // Check if there are more pages
@@ -148,7 +158,16 @@ const BoyNames = () => {
               ) : boyNames.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 animate-fade-in">
                   {boyNames.map((name) => (
-                    <NameCard key={name.id} {...name} />
+                    <NameCard 
+                      key={name.id}
+                      id={name.id}
+                      name={name.name}
+                      meaning={name.meaning}
+                      gender={name.gender}
+                      origin={name.origin}
+                      religion={name.religion}
+                      language={name.language}
+                    />
                   ))}
                 </div>
               ) : (

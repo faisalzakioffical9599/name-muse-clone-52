@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Heart, Info, Globe, Church, Languages } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NameCardProps {
-  id: string;
+  id: string | number;
   name: string;
   meaning: string;
   gender: "boy" | "girl" | "unisex";
@@ -121,3 +120,5 @@ const NameCard = ({
 };
 
 export default NameCard;
+
+export type { NameCardProps };

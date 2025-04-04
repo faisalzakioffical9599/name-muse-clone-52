@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import NameCard from "./NameCard";
+import NameCard, { NameCardProps } from "./NameCard";
 import { clientApi } from "../services/clientApi";
 
 interface FeaturedNamesProps {
@@ -121,7 +121,15 @@ const FeaturedNames = ({ title, subtitle, type, limit = 4 }: FeaturedNamesProps)
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 staggered-fade-in">
           {names.map((name) => (
-            <NameCard key={name.id} {...name} />
+            <NameCard 
+              key={name.id} 
+              id={name.id}
+              name={name.name}
+              meaning={name.meaning}
+              gender={name.gender}
+              origin={name.origin}
+              popularity={name.popularity}
+            />
           ))}
         </div>
       )}

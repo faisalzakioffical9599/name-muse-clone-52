@@ -1,5 +1,12 @@
-
 import { api as adminApi } from '../admin/services/api';
+
+// Define a type for category parameters
+interface CategoryParams {
+  origin?: string;
+  religion?: string;
+  language?: string;
+  [key: string]: any;
+}
 
 /**
  * Client-side API wrapper for the website's frontend
@@ -35,7 +42,7 @@ export const clientApi = {
     
     // Get names by category (origin, religion, language)
     getNamesByCategory: async (categoryType, categoryId, params = {}) => {
-      const filter = {};
+      const filter: CategoryParams = {};
       if (categoryType === 'country') filter.origin = categoryId;
       if (categoryType === 'religion') filter.religion = categoryId;
       if (categoryType === 'language') filter.language = categoryId;
