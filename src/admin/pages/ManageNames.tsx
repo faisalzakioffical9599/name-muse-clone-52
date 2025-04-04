@@ -65,7 +65,7 @@ const ManageNames = () => {
   const [filterReligion, setFilterReligion] = useState("all");
   const [sortBy, setSortBy] = useState("name-asc");
   const [isEditing, setIsEditing] = useState(false);
-  const [loadingId, setLoadingId] = useState(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   const [nameDetails, setNameDetails] = useState({
     id: null,
@@ -387,12 +387,12 @@ const ManageNames = () => {
     input.type = 'file';
     input.accept = '.json';
     input.onchange = (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
           try {
-            const jsonData = JSON.parse(event.target.result);
+            const jsonData = JSON.parse(event.target?.result as string);
             if (jsonData && typeof jsonData === 'object') {
               setNameDetails(jsonData);
               

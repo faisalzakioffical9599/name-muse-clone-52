@@ -1,6 +1,68 @@
 
+// Define interfaces for API responses and parameters
+interface AuthResponse {
+  success: boolean;
+  token?: string;
+  message?: string;
+  isAuthenticated?: boolean;
+}
+
+interface NameData {
+  id: number;
+  name: string;
+  meaning: string;
+  gender: string;
+  origin: string;
+  religion: string;
+  language?: string;
+  description?: string;
+  popularity?: number;
+  luckyNumber?: number;
+  luckyStone?: string;
+  luckyColor?: string;
+  pronunciation?: string;
+  numerology?: number;
+  zodiacSign?: string;
+  nameVariations?: string[];
+  personality?: string[];
+  famousPeople?: {name: string, description: string}[];
+  nameFaqs?: {question: string, answer: string}[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+}
+
+interface PaginationParams {
+  page?: number | string;
+  limit?: number | string;
+  search?: string;
+  gender?: string;
+  origin?: string;
+  religion?: string;
+  sortBy?: string;
+  [key: string]: any; // Allow for additional parameters
+}
+
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  message?: string;
+}
+
+interface SingleResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
 // Dummy data for names
-const dummyNames = [
+const dummyNames: NameData[] = [
   {
     id: 1,
     name: "Aiden",
@@ -142,7 +204,7 @@ const TOKEN_KEY = "admin_auth_token";
 export const api = {
   // Auth endpoints
   auth: {
-    login: async (username: string, password: string) => {
+    login: async (username: string, password: string): Promise<AuthResponse> => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           if (username === "admin" && password === "password") {
@@ -156,7 +218,7 @@ export const api = {
         }, 800);
       });
     },
-    logout: async () => {
+    logout: async (): Promise<AuthResponse> => {
       return new Promise((resolve) => {
         setTimeout(() => {
           localStorage.removeItem(TOKEN_KEY);
@@ -165,7 +227,7 @@ export const api = {
         }, 500);
       });
     },
-    forgotPassword: async (email: string) => {
+    forgotPassword: async (email: string): Promise<AuthResponse> => {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve({ 
@@ -175,7 +237,7 @@ export const api = {
         }, 1000);
       });
     },
-    changePassword: async (currentPassword: string, newPassword: string) => {
+    changePassword: async (currentPassword: string, newPassword: string): Promise<AuthResponse> => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           if (currentPassword === "password") {
@@ -186,7 +248,7 @@ export const api = {
         }, 800);
       });
     },
-    checkToken: async () => {
+    checkToken: async (): Promise<AuthResponse> => {
       return new Promise((resolve) => {
         setTimeout(() => {
           const token = localStorage.getItem(TOKEN_KEY);
@@ -201,7 +263,7 @@ export const api = {
   
   // Names endpoints
   names: {
-    getAll: async (params = {}) => {
+    getAll: async (params: PaginationParams = {}): Promise<PaginatedResponse<NameData>> => {
       return new Promise((resolve) => {
         setTimeout(() => {
           let result = [...dummyNames];
@@ -244,8 +306,8 @@ export const api = {
           
           // Handle pagination
           if (params.page && params.limit) {
-            const page = parseInt(params.page);
-            const limit = parseInt(params.limit);
+            const page = parseInt(params.page.toString());
+            const limit = parseInt(params.limit.toString());
             const start = (page - 1) * limit;
             const end = start + limit;
             result = result.slice(start, end);
@@ -256,19 +318,19 @@ export const api = {
             data: result,
             meta: {
               total,
-              page: params.page || 1,
-              limit: params.limit || total,
-              totalPages: Math.ceil(total / (params.limit || total))
+              page: params.page ? parseInt(params.page.toString()) : 1,
+              limit: params.limit ? parseInt(params.limit.toString()) : total,
+              totalPages: Math.ceil(total / (params.limit ? parseInt(params.limit.toString()) : total))
             }
           });
         }, 500);
       });
     },
     
-    getById: async (id) => {
+    getById: async (id: number | string): Promise<SingleResponse<NameData>> => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          const name = dummyNames.find(n => n.id === parseInt(id));
+          const name = dummyNames.find(n => n.id === parseInt(id.toString()));
           if (name) {
             resolve({ success: true, data: name });
           } else {
@@ -278,23 +340,23 @@ export const api = {
       });
     },
     
-    create: async (nameData) => {
+    create: async (nameData: Partial<NameData>): Promise<SingleResponse<NameData>> => {
       return new Promise((resolve) => {
         setTimeout(() => {
           const newName = {
             id: dummyNames.length + 1,
             ...nameData
-          };
+          } as NameData;
           dummyNames.push(newName);
           resolve({ success: true, data: newName, message: "Name created successfully" });
         }, 700);
       });
     },
     
-    update: async (id, nameData) => {
+    update: async (id: number | string, nameData: Partial<NameData>): Promise<SingleResponse<NameData>> => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          const index = dummyNames.findIndex(n => n.id === parseInt(id));
+          const index = dummyNames.findIndex(n => n.id === parseInt(id.toString()));
           if (index !== -1) {
             dummyNames[index] = { ...dummyNames[index], ...nameData };
             resolve({ success: true, data: dummyNames[index], message: "Name updated successfully" });
@@ -305,10 +367,10 @@ export const api = {
       });
     },
     
-    delete: async (id) => {
+    delete: async (id: number | string): Promise<SingleResponse<NameData>> => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          const index = dummyNames.findIndex(n => n.id === parseInt(id));
+          const index = dummyNames.findIndex(n => n.id === parseInt(id.toString()));
           if (index !== -1) {
             const deletedName = dummyNames[index];
             dummyNames.splice(index, 1);

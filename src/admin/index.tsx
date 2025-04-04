@@ -42,7 +42,7 @@ const Admin = () => {
     const checkAuth = async () => {
       try {
         const response = await api.auth.checkToken();
-        setIsLoggedIn(response.isAuthenticated);
+        setIsLoggedIn(response.isAuthenticated || false);
       } catch (error) {
         console.error("Auth check failed", error);
         setIsLoggedIn(false);
