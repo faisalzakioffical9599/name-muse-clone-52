@@ -30,7 +30,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     const checkAuth = async () => {
       try {
         const response = await api.auth.checkToken();
-        if (response.isAuthenticated) {
+        if (response?.isAuthenticated) {
           onLogin();
         }
       } catch (error) {

@@ -15,9 +15,59 @@ import {
 import NameCard from "../components/NameCard";
 import SearchBar from "../components/SearchBar";
 import PopularNamesSidebar from "../components/PopularNamesSidebar";
+import { clientApi } from "../services/clientApi";
+import { FilterOptions } from "../components/SearchFilter";
+
+interface NameData {
+  id: string | number;
+  name: string;
+  meaning: string;
+  gender: "boy" | "girl" | "unisex";
+  origin: string;
+  religion?: string;
+  language?: string;
+}
 
 const BoyNames = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [boyNames, setBoyNames] = useState<NameData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFilters, setSearchFilters] = useState<FilterOptions>({});
+
+  // Fetch boy names from API
+  useEffect(() => {
+    const fetchBoyNames = async () => {
+      setIsLoading(true);
+      try {
+        const response = await clientApi.names.getBoyNames({
+          page,
+          limit: 9,
+          search: searchQuery,
+          ...searchFilters
+        });
+        
+        if (response && response.data) {
+          if (page === 1) {
+            setBoyNames(response.data);
+          } else {
+            setBoyNames(prev => [...prev, ...response.data]);
+          }
+          
+          // Check if there are more pages
+          setHasMore(response.meta.page < response.meta.totalPages);
+        }
+      } catch (error) {
+        console.error("Error fetching boy names:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBoyNames();
+  }, [page, searchQuery, searchFilters]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,90 +85,17 @@ const BoyNames = () => {
     });
   };
 
-  // Mock data for boy names - would be replaced by API call
-  const boyNames = [
-    {
-      id: "n1",
-      name: "Noah",
-      meaning: "Rest, comfort",
-      gender: "boy" as const,
-      origin: "Hebrew",
-      religion: "Judaism",
-      language: "Hebrew"
-    },
-    {
-      id: "n2",
-      name: "Liam",
-      meaning: "Strong-willed warrior",
-      gender: "boy" as const,
-      origin: "Irish",
-      religion: "Christianity",
-      language: "Gaelic"
-    },
-    {
-      id: "n3",
-      name: "Oliver",
-      meaning: "Olive tree",
-      gender: "boy" as const,
-      origin: "Latin",
-      religion: "Christianity",
-      language: "Latin"
-    },
-    {
-      id: "n4",
-      name: "Elijah",
-      meaning: "My God is Yahweh",
-      gender: "boy" as const,
-      origin: "Hebrew",
-      religion: "Judaism",
-      language: "Hebrew"
-    },
-    {
-      id: "n5",
-      name: "William",
-      meaning: "Resolute protector",
-      gender: "boy" as const,
-      origin: "Germanic",
-      religion: "Christianity",
-      language: "German"
-    },
-    {
-      id: "n6",
-      name: "James",
-      meaning: "Supplanter",
-      gender: "boy" as const,
-      origin: "Hebrew",
-      religion: "Christianity",
-      language: "Hebrew"
-    },
-    {
-      id: "n7",
-      name: "Benjamin",
-      meaning: "Son of the right hand",
-      gender: "boy" as const,
-      origin: "Hebrew",
-      religion: "Judaism",
-      language: "Hebrew"
-    },
-    {
-      id: "n8",
-      name: "Lucas",
-      meaning: "Bringer of light",
-      gender: "boy" as const,
-      origin: "Latin",
-      religion: "Christianity",
-      language: "Latin"
-    },
-    {
-      id: "n9",
-      name: "Henry",
-      meaning: "Ruler of the home",
-      gender: "boy" as const,
-      origin: "Germanic",
-      religion: "Christianity",
-      language: "German"
-    },
-  ];
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const handleSearch = (query: string, filters: FilterOptions) => {
+    setSearchQuery(query);
+    setSearchFilters(filters);
+    setPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,21 +132,59 @@ const BoyNames = () => {
               </div>
               
               {/* Search Bar */}
-              <SearchBar className="mb-12" placeholder="Search for boy names..." />
+              <SearchBar 
+                className="mb-12" 
+                placeholder="Search for boy names..." 
+                onSearch={handleSearch}
+              />
               
               {/* Names Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 animate-fade-in">
-                {boyNames.map((name) => (
-                  <NameCard key={name.id} {...name} />
-                ))}
-              </div>
+              {isLoading && page === 1 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-md"></div>
+                  ))}
+                </div>
+              ) : boyNames.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 animate-fade-in">
+                  {boyNames.map((name) => (
+                    <NameCard key={name.id} {...name} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 bg-gray-50 rounded-lg">
+                  <p className="text-lg text-gray-500">No names found matching your search criteria.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => handleSearch("", {})}
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+              )}
               
               {/* Load More Button */}
-              <div className="text-center mt-8">
-                <Button className="w-full sm:w-auto">
-                  Load More Names
-                </Button>
-              </div>
+              {boyNames.length > 0 && (
+                <div className="text-center mt-8">
+                  <Button 
+                    className="w-full sm:w-auto" 
+                    onClick={handleLoadMore}
+                    disabled={isLoading || !hasMore}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Loading...
+                      </span>
+                    ) : hasMore ? (
+                      "Load More Names"
+                    ) : (
+                      "No More Names"
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
             
             {/* Sidebar */}
