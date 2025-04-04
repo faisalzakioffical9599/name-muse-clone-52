@@ -19,28 +19,61 @@ import TrendingNames from "./pages/TrendingNames";
 import BirthCalculator from "./pages/BirthCalculator";
 import SearchBar from "../components/SearchBar";
 import { FilterOptions } from "../components/SearchFilter";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { api } from "./services/api";
+import { useToast } from "@/hooks/use-toast";
 
 const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(() => {
     const tabFromUrl = searchParams.get("tab");
     return tabFromUrl || "dashboard";
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilters, setSearchFilters] = useState<FilterOptions>({});
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Check if user is logged in on component mount
+  // Check login status on mount
   useEffect(() => {
-    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-    setIsLoggedIn(adminLoggedIn);
+    const checkAuth = async () => {
+      try {
+        const response = await api.auth.checkToken();
+        setIsLoggedIn(response.isAuthenticated);
+      } catch (error) {
+        console.error("Auth check failed", error);
+        setIsLoggedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   // Update URL when tab changes
   useEffect(() => {
-    setSearchParams({ tab: selectedTab });
-  }, [selectedTab, setSearchParams]);
+    if (isLoggedIn) {
+      setSearchParams({ tab: selectedTab });
+    }
+  }, [selectedTab, setSearchParams, isLoggedIn]);
+
+  // Set the tab from URL on initial load
+  useEffect(() => {
+    if (isLoggedIn && location.search) {
+      const params = new URLSearchParams(location.search);
+      const tab = params.get("tab");
+      if (tab) {
+        setSelectedTab(tab);
+      } else {
+        // If no tab parameter, set the default and update URL
+        navigate({ search: "?tab=dashboard" });
+      }
+    }
+  }, [location.search, isLoggedIn, navigate]);
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab);
@@ -48,10 +81,24 @@ const Admin = () => {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    navigate({ search: "?tab=dashboard" });
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await api.auth.logout();
+      setIsLoggedIn(false);
+      navigate("/admin");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSearch = (searchTerm: string, filters: FilterOptions) => {
@@ -104,6 +151,14 @@ const Admin = () => {
 
   // Only show search in relevant sections
   const showSearch = ["names", "faqs", "regional", "stories", "trending"].includes(selectedTab);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return <AdminLogin onLogin={handleLogin} />;

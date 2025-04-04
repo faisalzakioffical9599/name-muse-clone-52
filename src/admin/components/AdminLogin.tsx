@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, LogIn, KeyRound } from "lucide-react";
+import { api } from "../services/api";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -26,34 +27,40 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
 
   // Check if user is already logged in on component mount
   useEffect(() => {
-    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-    if (adminLoggedIn) {
-      onLogin();
-    }
+    const checkAuth = async () => {
+      try {
+        const response = await api.auth.checkToken();
+        if (response.isAuthenticated) {
+          onLogin();
+        }
+      } catch (error) {
+        console.error("Auth check failed", error);
+      }
+    };
+    
+    checkAuth();
   }, [onLogin]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // This is a mock login - in a real app, you would connect to your backend
-    setTimeout(() => {
-      if (username === "admin" && password === "password") {
-        toast({
-          title: "Login successful",
-          description: "Welcome to the admin panel",
-        });
-        localStorage.setItem("adminLoggedIn", "true");
-        onLogin();
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Invalid username or password",
-          variant: "destructive",
-        });
-      }
+    try {
+      await api.auth.login(username, password);
+      toast({
+        title: "Login successful",
+        description: "Welcome to the admin panel",
+      });
+      onLogin();
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Invalid username or password",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
