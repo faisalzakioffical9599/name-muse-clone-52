@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from "react";
 import {
   Button,
-  ButtonGroup
 } from "@/components/ui/button";
 import {
   Card,
@@ -134,6 +134,12 @@ interface NameData {
   seoKeywords?: string;
 }
 
+// Create a type that matches the form values that can be passed to API
+type NameDataInput = Omit<NameData, 'id' | 'famousPeople' | 'nameFaqs'> & {
+  famousPeople?: {name: string, description: string}[];
+  nameFaqs?: {question: string, answer: string}[];
+};
+
 const ManageNames = () => {
   const [names, setNames] = useState<NameData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -231,10 +237,32 @@ const ManageNames = () => {
     setPage(1); // Reset to the first page when limit changes
   };
 
+  // Convert form values to API input format
+  const convertFormValuesToApiInput = (values: z.infer<typeof nameSchema>): NameDataInput => {
+    // Ensure famousPeople and nameFaqs have required properties
+    const famousPeople = values.famousPeople?.map(person => ({
+      name: person.name || "",
+      description: person.description || ""
+    }));
+
+    const nameFaqs = values.nameFaqs?.map(faq => ({
+      question: faq.question || "",
+      answer: faq.answer || ""
+    }));
+
+    return {
+      ...values,
+      famousPeople,
+      nameFaqs
+    };
+  };
+
   // Handle name creation
   const handleCreateName = async (values: z.infer<typeof nameSchema>) => {
     try {
-      const response = await api.names.create(values);
+      const apiInput = convertFormValuesToApiInput(values);
+      const response = await api.names.create(apiInput);
+      
       if (response.success) {
         toast({
           title: "Name created",
@@ -264,7 +292,9 @@ const ManageNames = () => {
   const handleUpdateName = async (values: z.infer<typeof nameSchema>) => {
     if (!selectedName) return;
     try {
-      const response = await api.names.update(selectedName.id, values);
+      const apiInput = convertFormValuesToApiInput(values);
+      const response = await api.names.update(selectedName.id, apiInput);
+      
       if (response.success) {
         toast({
           title: "Name updated",
@@ -359,7 +389,8 @@ const ManageNames = () => {
   
           // If all names are valid, proceed to create them
           for (const name of importedNames) {
-            await api.names.create(name);
+            const apiInput = convertFormValuesToApiInput(name);
+            await api.names.create(apiInput);
           }
   
           toast({
@@ -547,7 +578,7 @@ const ManageNames = () => {
                       <span>Total names: {total}</span>
                       <div className="flex items-center gap-4">
                         <span>Page: {page}</span>
-                        <ButtonGroup>
+                        <div className="flex items-center gap-1">
                           <Button
                             variant="outline"
                             onClick={() => handlePageChange(page - 1)}
@@ -562,7 +593,7 @@ const ManageNames = () => {
                           >
                             Next
                           </Button>
-                        </ButtonGroup>
+                        </div>
                         <Select value={limit.toString()} onValueChange={(value) => handleLimitChange(parseInt(value))}>
                           <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="Limit" />
