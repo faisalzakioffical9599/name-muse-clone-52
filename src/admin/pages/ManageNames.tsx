@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -134,11 +133,30 @@ interface NameData {
   seoKeywords?: string;
 }
 
-// Create a type that matches the form values that can be passed to API
-type NameDataInput = Omit<NameData, 'id' | 'famousPeople' | 'nameFaqs'> & {
+// Define a more specific type for API inputs that matches what we're sending
+interface NameDataInput {
+  name: string;
+  meaning: string;
+  gender: "boy" | "girl" | "unisex";
+  origin: string;
+  religion: string;
+  language?: string;
+  description?: string;
+  popularity?: number;
+  luckyNumber?: number;
+  luckyStone?: string;
+  luckyColor?: string;
+  pronunciation?: string;
+  numerology?: number;
+  zodiacSign?: string;
+  nameVariations?: string[];
+  personality?: string[];
   famousPeople?: {name: string, description: string}[];
   nameFaqs?: {question: string, answer: string}[];
-};
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+}
 
 const ManageNames = () => {
   const [names, setNames] = useState<NameData[]>([]);
@@ -250,11 +268,32 @@ const ManageNames = () => {
       answer: faq.answer || ""
     }));
 
-    return {
-      ...values,
-      famousPeople,
-      nameFaqs
+    // Create a properly typed object with all required fields
+    const result: NameDataInput = {
+      name: values.name,
+      meaning: values.meaning,
+      gender: values.gender,
+      origin: values.origin,
+      religion: values.religion || "",
+      language: values.language,
+      description: values.description,
+      popularity: values.popularity,
+      luckyNumber: values.luckyNumber,
+      luckyStone: values.luckyStone,
+      luckyColor: values.luckyColor,
+      pronunciation: values.pronunciation,
+      numerology: values.numerology,
+      zodiacSign: values.zodiacSign,
+      nameVariations: values.nameVariations,
+      personality: values.personality,
+      famousPeople: famousPeople,
+      nameFaqs: nameFaqs,
+      seoTitle: values.seoTitle,
+      seoDescription: values.seoDescription,
+      seoKeywords: values.seoKeywords
     };
+
+    return result;
   };
 
   // Handle name creation
