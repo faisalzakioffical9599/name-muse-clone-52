@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -160,6 +161,7 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
     },
   });
 
+  // Fixed initializations to ensure required properties are defined
   const [translations, setTranslations] = useState<Translation[]>(
     initialValues?.translations || [{ language: "", value: "" }]
   );
