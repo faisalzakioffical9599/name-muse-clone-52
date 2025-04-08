@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -30,8 +29,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
-// Define the types for the arrays with required properties (no optional properties)
 interface Translation {
   language: string;
   value: string;
@@ -56,7 +55,6 @@ interface NameFaq {
   answer: string;
 }
 
-// Schema for the form
 const nameFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   meaning: z.string().min(1, "Meaning is required"),
@@ -161,8 +159,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
     },
   });
 
-  // Fixed initializations to ensure required properties are defined
-  // Making sure all required properties in the interface have non-optional initial values
   const [translations, setTranslations] = useState<Translation[]>(
     initialValues?.translations && initialValues.translations.length > 0 
       ? initialValues.translations.map(t => ({ language: t.language || "", value: t.value || "" })) 
@@ -383,7 +379,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
     });
   });
 
-  
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -450,7 +445,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           />
         </FormSection>
 
-        {/* Translations Section */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Languages className="mr-2 h-5 w-5" />
@@ -499,7 +493,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* Meanings in Different Languages Section */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Book className="mr-2 h-5 w-5" />
@@ -548,7 +541,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* Origin & Language */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Globe className="mr-2 h-5 w-5" />
@@ -599,7 +591,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </FormGrid>
         </FormSection>
 
-        {/* Descriptions Array */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Info className="mr-2 h-5 w-5" />
@@ -639,7 +630,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* Tags */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Tag className="mr-2 h-5 w-5" />
@@ -681,11 +671,9 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* Overview Section */}
         <FormSection>
           <FormSectionTitle className="text-xl font-bold mb-4">Overview</FormSectionTitle>
           
-          {/* Pronunciation Section */}
           <FormSection>
             <FormSectionTitle className="flex items-center">
               <Mic className="mr-2 h-5 w-5" />
@@ -734,7 +722,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
             </div>
           </FormSection>
 
-          {/* Numerology and Lucky Elements Section */}
           <FormGrid columns={2}>
             <FormField
               control={form.control}
@@ -824,7 +811,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
             />
           </FormGrid>
 
-          {/* Personality Traits */}
           <FormSection>
             <FormSectionTitle className="flex items-center">
               <Smile className="mr-2 h-5 w-5" />
@@ -885,7 +871,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           />
         </FormSection>
 
-        {/* Additional Details */}
         <FormSection>
           <FormSectionTitle>Additional Details</FormSectionTitle>
           <FormGrid columns={2}>
@@ -1036,7 +1021,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </FormGrid>
         </FormSection>
 
-        {/* Famous People Section */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Users className="mr-2 h-5 w-5" />
@@ -1063,16 +1047,18 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
                 <CardContent>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <Label>Name</Label>
+                      <Label htmlFor={`famousPerson-name-${index}`}>Name</Label>
                       <Input
+                        id={`famousPerson-name-${index}`}
                         value={person.name}
                         onChange={(e) => handleFamousPersonChange(index, "name", e.target.value)}
                         placeholder="Full name"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label>Description</Label>
+                      <Label htmlFor={`famousPerson-description-${index}`}>Description</Label>
                       <Textarea
+                        id={`famousPerson-description-${index}`}
                         value={person.description}
                         onChange={(e) => handleFamousPersonChange(index, "description", e.target.value)}
                         placeholder="Brief biography"
@@ -1095,7 +1081,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* FAQs Section */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Info className="mr-2 h-5 w-5" />
@@ -1122,16 +1107,18 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
                 <CardContent>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <Label>Question</Label>
+                      <Label htmlFor={`faq-question-${index}`}>Question</Label>
                       <Input
+                        id={`faq-question-${index}`}
                         value={faq.question}
                         onChange={(e) => handleFaqChange(index, "question", e.target.value)}
                         placeholder="e.g., What does the name mean?"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label>Answer</Label>
+                      <Label htmlFor={`faq-answer-${index}`}>Answer</Label>
                       <Textarea
+                        id={`faq-answer-${index}`}
                         value={faq.answer}
                         onChange={(e) => handleFaqChange(index, "answer", e.target.value)}
                         placeholder="Answer to the question"
@@ -1154,7 +1141,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
           </div>
         </FormSection>
 
-        {/* SEO Section */}
         <FormSection>
           <FormSectionTitle className="flex items-center">
             <Globe className="mr-2 h-5 w-5" />
