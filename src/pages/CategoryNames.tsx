@@ -1,3 +1,4 @@
+
 // CategoryNames.tsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { SearchBar } from "@/components/SearchBar";
+import SearchBar from "@/components/SearchBar"; // Fix: import directly
 
 interface Category {
   id: string;
@@ -53,11 +54,8 @@ const CategoryNames = () => {
     const fetchCategoryAndNames = async () => {
       setIsLoading(true);
       try {
-        // Fetch category details
-        const categoryResponse = await api.categories.get(
-          categoryType,
-          categoryId
-        );
+        // Fetch category details - fix the API call
+        const categoryResponse = await api.categories.getById(categoryId as string);
         if (categoryResponse.success) {
           setCategory(categoryResponse.data);
         } else {
@@ -73,12 +71,21 @@ const CategoryNames = () => {
         const namesResponse = await api.names.getAll({
           page: page.toString(),
           limit: limit.toString(),
-          [categoryType]: categoryId,
+          [categoryType as string]: categoryId,
           search: searchQuery,
         });
 
         if (namesResponse.success) {
-          setNames(namesResponse.data);
+          // Fix: ensure we map the data to match the NameCardProps type
+          const mappedNames = namesResponse.data.map(name => ({
+            ...name,
+            // Ensure gender is one of the allowed types
+            gender: (name.gender as string === 'boy' || name.gender as string === 'girl' || 
+                    name.gender as string === 'unisex') ? 
+                    (name.gender as "boy" | "girl" | "unisex") : "unisex"
+          }));
+          
+          setNames(mappedNames as NameCardProps[]);
           setTotal(namesResponse.meta.total);
         } else {
           toast({
@@ -214,14 +221,14 @@ const CategoryNames = () => {
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() => handlePageChange(page - 1)}
-                      disabled={page === 1}
+                      className={page === 1 ? "pointer-events-none opacity-50" : ""}
                     />
                   </PaginationItem>
                   {getPaginationItems()}
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => handlePageChange(page + 1)}
-                      disabled={page * limit >= total}
+                      className={page * limit >= total ? "pointer-events-none opacity-50" : ""}
                     />
                   </PaginationItem>
                 </PaginationContent>
