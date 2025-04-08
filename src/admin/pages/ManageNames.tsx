@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -961,15 +962,472 @@ const ManageNames = () => {
                 </TabsContent>
                 
                 <TabsContent value="details" className="space-y-4">
-                  {/* Details content */}
+                  <FormSection>
+                    <FormSectionTitle>Additional Details</FormSectionTitle>
+                    
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="popularity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Popularity Rank</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="e.g., 10"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                              />
+                            </FormControl>
+                            <FormDescription>Lower number means more popular</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="syllables"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Syllables</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="Number of syllables"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Detailed Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Comprehensive description of the name" 
+                              className="min-h-[120px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormSection>
+                      <FormSectionTitle>Name Variations & Variations</FormSectionTitle>
+                      
+                      <div className="space-y-4">
+                        <div className="flex gap-4 items-end">
+                          <div className="flex-1">
+                            <FormLabel htmlFor="new-variation">Add Variation</FormLabel>
+                            <Input
+                              id="new-variation"
+                              value={newVariation}
+                              onChange={(e) => setNewVariation(e.target.value)}
+                              placeholder="e.g., Alex for Alexander"
+                            />
+                          </div>
+                          <Button 
+                            type="button"
+                            onClick={addVariation}
+                            disabled={!newVariation}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {form.getValues("nameVariations")?.map((variation, index) => (
+                            <div key={index} className="flex items-center gap-2 bg-muted/40 p-2 rounded-md">
+                              <span className="flex-1">{variation}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeVariation(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          {(!form.getValues("nameVariations") || form.getValues("nameVariations")?.length === 0) && (
+                            <p className="text-sm text-muted-foreground">No variations added yet.</p>
+                          )}
+                        </div>
+                      </div>
+                    </FormSection>
+                  </FormSection>
                 </TabsContent>
                 
                 <TabsContent value="content" className="space-y-4">
-                  {/* Content tab content */}
+                  <FormSection>
+                    <FormSectionTitle>Meaning & Personality</FormSectionTitle>
+                    
+                    <div className="space-y-4">
+                      <div className="flex gap-4 items-end">
+                        <div className="flex-1">
+                          <FormLabel htmlFor="new-personality">Add Personality Trait</FormLabel>
+                          <Input
+                            id="new-personality"
+                            value={newPersonality}
+                            onChange={(e) => setNewPersonality(e.target.value)}
+                            placeholder="e.g., Courageous, Kind"
+                          />
+                        </div>
+                        <Button 
+                          type="button"
+                          onClick={addPersonality}
+                          disabled={!newPersonality}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {form.getValues("personality")?.map((trait, index) => (
+                          <div key={index} className="flex items-center gap-2 bg-muted/40 p-2 rounded-md">
+                            <span className="flex-1">{trait}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removePersonality(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {(!form.getValues("personality") || form.getValues("personality")?.length === 0) && (
+                          <p className="text-sm text-muted-foreground">No personality traits added yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>Famous People</FormSectionTitle>
+                    
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <FormLabel htmlFor="famous-name">Name</FormLabel>
+                          <Input
+                            id="famous-name"
+                            value={newFamousPerson.name}
+                            onChange={(e) => setNewFamousPerson({...newFamousPerson, name: e.target.value})}
+                            placeholder="Famous person's name"
+                          />
+                        </div>
+                        <div>
+                          <FormLabel htmlFor="famous-desc">Description</FormLabel>
+                          <Input
+                            id="famous-desc"
+                            value={newFamousPerson.description}
+                            onChange={(e) => setNewFamousPerson({...newFamousPerson, description: e.target.value})}
+                            placeholder="Brief description"
+                          />
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        type="button"
+                        onClick={addFamousPerson}
+                        disabled={!newFamousPerson.name || !newFamousPerson.description}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Famous Person
+                      </Button>
+                      
+                      <div className="space-y-2 mt-4">
+                        {form.getValues("famousPeople")?.map((person, index) => (
+                          <div key={index} className="flex flex-col gap-2 bg-muted/40 p-3 rounded-md">
+                            <div className="flex justify-between">
+                              <span className="font-medium">{person.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFamousPerson(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{person.description}</p>
+                          </div>
+                        ))}
+                        {(!form.getValues("famousPeople") || form.getValues("famousPeople")?.length === 0) && (
+                          <p className="text-sm text-muted-foreground">No famous people added yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>FAQs</FormSectionTitle>
+                    
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <FormLabel htmlFor="faq-question">Question</FormLabel>
+                          <Input
+                            id="faq-question"
+                            value={newFaq.question}
+                            onChange={(e) => setNewFaq({...newFaq, question: e.target.value})}
+                            placeholder="Question about the name"
+                          />
+                        </div>
+                        <div>
+                          <FormLabel htmlFor="faq-answer">Answer</FormLabel>
+                          <Textarea
+                            id="faq-answer"
+                            value={newFaq.answer}
+                            onChange={(e) => setNewFaq({...newFaq, answer: e.target.value})}
+                            placeholder="Answer to the question"
+                            className="min-h-[80px]"
+                          />
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        type="button"
+                        onClick={addFaq}
+                        disabled={!newFaq.question || !newFaq.answer}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add FAQ
+                      </Button>
+                      
+                      <div className="space-y-2 mt-4">
+                        {form.getValues("nameFaqs")?.map((faq, index) => (
+                          <div key={index} className="flex flex-col gap-2 bg-muted/40 p-3 rounded-md">
+                            <div className="flex justify-between">
+                              <span className="font-medium">{faq.question}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFaq(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <p className="text-sm">{faq.answer}</p>
+                          </div>
+                        ))}
+                        {(!form.getValues("nameFaqs") || form.getValues("nameFaqs")?.length === 0) && (
+                          <p className="text-sm text-muted-foreground">No FAQs added yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
                 </TabsContent>
                 
                 <TabsContent value="seo" className="space-y-4">
-                  {/* SEO tab content */}
+                  <FormSection>
+                    <FormSectionTitle>Lucky Elements</FormSectionTitle>
+                    
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="luckyNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Number</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="e.g., 7"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="numerology"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Numerology</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="Numerological value"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormGrid columns={3}>
+                      <FormField
+                        control={form.control}
+                        name="luckyStone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Stone</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Ruby, Sapphire" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="luckyColor"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Color</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Blue, Red" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="zodiacSign"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Zodiac Sign</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Aries, Taurus" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>SEO Settings</FormSectionTitle>
+                    
+                    <FormField
+                      control={form.control}
+                      name="seoTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="SEO-optimized title" {...field} />
+                          </FormControl>
+                          <FormDescription>Optimal length: 50-60 characters</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="seoDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Meta description for search engines" 
+                              className="min-h-[80px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>Optimal length: 150-160 characters</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="seoKeywords"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Keywords</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Comma-separated keywords" {...field} />
+                          </FormControl>
+                          <FormDescription>Separate keywords with commas</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="isFeatured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Feature this name</FormLabel>
+                            <FormDescription>
+                              Featured names will be highlighted on the website.
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="archived">Archived</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Only active names will be visible on the website.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormSection>
                 </TabsContent>
               </Tabs>
               
