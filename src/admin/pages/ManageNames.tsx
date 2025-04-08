@@ -82,7 +82,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "../services/api";
 import { FilterOptions } from "@/components/SearchFilter";
 
-// Define a schema for name validation with all required fields
 const nameSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
@@ -124,7 +123,6 @@ const nameSchema = z.object({
   status: z.enum(['active', 'pending', 'archived']).default('active'),
 });
 
-// Define the types for the data
 interface NameData {
   id: number;
   name: string;
@@ -153,7 +151,6 @@ interface NameData {
   status?: 'active' | 'pending' | 'archived';
 }
 
-// Define a more specific type for API inputs that matches what we're sending
 interface NameDataInput {
   name: string;
   meaning: string;
@@ -201,7 +198,6 @@ const ManageNames = () => {
   const [newPersonality, setNewPersonality] = useState('');
   const { toast } = useToast();
 
-  // Form for creating and editing names
   const form = useForm<z.infer<typeof nameSchema>>({
     resolver: zodResolver(nameSchema),
     defaultValues: {
@@ -232,10 +228,8 @@ const ManageNames = () => {
     },
   });
 
-  // Function to get form values
   const getFormValues = () => form.getValues();
 
-  // Fetch names from API
   useEffect(() => {
     const fetchNames = async () => {
       setIsLoading(true);
@@ -271,27 +265,22 @@ const ManageNames = () => {
     fetchNames();
   }, [page, limit, searchQuery, searchFilters, toast]);
 
-  // Handle search
   const handleSearch = (searchTerm: string, filters: FilterOptions) => {
     setSearchQuery(searchTerm);
     setSearchFilters(filters);
-    setPage(1); // Reset to the first page when searching
+    setPage(1);
   };
 
-  // Handle page change
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
-  // Handle limit change
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
-    setPage(1); // Reset to the first page when limit changes
+    setPage(1);
   };
 
-  // Convert form values to API input format
   const convertFormValuesToApiInput = (values: z.infer<typeof nameSchema>): NameDataInput => {
-    // Ensure famousPeople and nameFaqs have required properties
     const famousPeople = values.famousPeople?.map(person => ({
       name: person.name || "",
       description: person.description || ""
@@ -302,7 +291,6 @@ const ManageNames = () => {
       answer: faq.answer || ""
     }));
 
-    // Create a properly typed object with all required fields
     const result: NameDataInput = {
       name: values.name,
       meaning: values.meaning,
@@ -333,7 +321,6 @@ const ManageNames = () => {
     return result;
   };
 
-  // Handle name creation
   const handleCreateName = async (values: z.infer<typeof nameSchema>) => {
     try {
       const apiInput = convertFormValuesToApiInput(values);
@@ -364,7 +351,6 @@ const ManageNames = () => {
     }
   };
 
-  // Handle name update
   const handleUpdateName = async (values: z.infer<typeof nameSchema>) => {
     if (!selectedName) return;
     try {
@@ -398,7 +384,6 @@ const ManageNames = () => {
     }
   };
 
-  // Handle name deletion
   const handleDeleteName = async () => {
     if (!selectedName) return;
     try {
@@ -427,7 +412,6 @@ const ManageNames = () => {
     }
   };
 
-  // Handle import names
   const handleImportNames = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
       return;
@@ -442,15 +426,13 @@ const ManageNames = () => {
           const importedNames = JSON.parse(event.target.result);
           setIsImporting(true);
   
-          // Validate that importedNames is an array
           if (!Array.isArray(importedNames)) {
             throw new Error("Imported data must be an array of names.");
           }
   
-          // Validate each name object against the schema
           for (const name of importedNames) {
             try {
-              nameSchema.parse(name); // This will throw an error if the name doesn't match the schema
+              nameSchema.parse(name);
             } catch (validationError) {
               console.error("Validation error for name:", name, validationError);
               toast({
@@ -459,11 +441,10 @@ const ManageNames = () => {
                 variant: "destructive",
               });
               setIsImporting(false);
-              return; // Stop processing further names
+              return;
             }
           }
   
-          // If all names are valid, proceed to create them
           let successCount = 0;
           let failCount = 0;
           
@@ -482,7 +463,7 @@ const ManageNames = () => {
             title: "Names Imported",
             description: `Successfully imported ${successCount} names. Failed: ${failCount}.`,
           });
-          setPage(1); // Refresh the name list
+          setPage(1);
         } catch (error) {
           console.error("Error importing names:", error);
           toast({
@@ -499,7 +480,6 @@ const ManageNames = () => {
     reader.readAsText(file);
   };
 
-  // Handle export names
   const handleExportNames = () => {
     const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
       JSON.stringify(names)
@@ -512,7 +492,6 @@ const ManageNames = () => {
     document.body.removeChild(link);
   };
 
-  // Helper functions for form arrays
   const addFamousPerson = () => {
     if (newFamousPerson.name && newFamousPerson.description) {
       const currentPeople = form.getValues('famousPeople') || [];
@@ -565,12 +544,10 @@ const ManageNames = () => {
     form.setValue('personality', currentPersonalities.filter((_, i) => i !== index));
   };
 
-  // Generate pagination items
   const getPaginationItems = () => {
     const totalPages = Math.ceil(total / limit);
     const items = [];
     
-    // Always show first page
     items.push(
       <PaginationItem key="first">
         <PaginationLink onClick={() => handlePageChange(1)} isActive={page === 1}>
@@ -579,7 +556,6 @@ const ManageNames = () => {
       </PaginationItem>
     );
     
-    // Add ellipsis if needed
     if (page > 3) {
       items.push(
         <PaginationItem key="ellipsis-start">
@@ -588,9 +564,8 @@ const ManageNames = () => {
       );
     }
     
-    // Show current page and neighbors
     for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
-      if (i === 1 || i === totalPages) continue; // Skip first and last page as they're always shown
+      if (i === 1 || i === totalPages) continue;
       items.push(
         <PaginationItem key={i}>
           <PaginationLink onClick={() => handlePageChange(i)} isActive={page === i}>
@@ -600,7 +575,6 @@ const ManageNames = () => {
       );
     }
     
-    // Add ellipsis if needed
     if (page < totalPages - 2) {
       items.push(
         <PaginationItem key="ellipsis-end">
@@ -609,7 +583,6 @@ const ManageNames = () => {
       );
     }
     
-    // Always show last page if there's more than one page
     if (totalPages > 1) {
       items.push(
         <PaginationItem key="last">
@@ -849,7 +822,6 @@ const ManageNames = () => {
         </CardContent>
       </Card>
 
-      {/* Name Form Dialog - Used for both Edit and Create */}
       <Dialog open={isEditDialogOpen || isCreateDialogOpen} onOpenChange={(open) => {
         if (!open) {
           setIsEditDialogOpen(false);
@@ -985,3 +957,51 @@ const ManageNames = () => {
                         )}
                       />
                     </FormGrid>
+                  </FormSection>
+                </TabsContent>
+                
+                <TabsContent value="details" className="space-y-4">
+                  {/* Details content */}
+                </TabsContent>
+                
+                <TabsContent value="content" className="space-y-4">
+                  {/* Content tab content */}
+                </TabsContent>
+                
+                <TabsContent value="seo" className="space-y-4">
+                  {/* SEO tab content */}
+                </TabsContent>
+              </Tabs>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" type="button" onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setIsCreateDialogOpen(false);
+                }}>Cancel</Button>
+                <Button type="submit">{isEditDialogOpen ? "Update" : "Create"}</Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the name
+              "{selectedName?.name}" from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteName}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default ManageNames;
