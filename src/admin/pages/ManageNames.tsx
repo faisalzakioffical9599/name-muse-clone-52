@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast";
-import { MoreVertical, Edit, Trash, Plus, FileInput, ArrowDownToLine, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, Edit, Trash, Plus, FileInput, ArrowDownToLine, Search, ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Form,
   FormControl,
@@ -457,8 +465,8 @@ const ManageNames = () => {
           }
   
           // If all names are valid, proceed to create them
-          const successCount = 0;
-          const failCount = 0;
+          let successCount = 0;
+          let failCount = 0;
           
           for (const name of importedNames) {
             try {
@@ -809,14 +817,14 @@ const ManageNames = () => {
                             <PaginationItem>
                               <PaginationPrevious
                                 onClick={() => handlePageChange(page - 1)}
-                                disabled={page === 1}
+                                className={page === 1 ? "pointer-events-none opacity-50" : ""}
                               />
                             </PaginationItem>
                             {getPaginationItems()}
                             <PaginationItem>
                               <PaginationNext
                                 onClick={() => handlePageChange(page + 1)}
-                                disabled={page * limit >= total}
+                                className={page * limit >= total ? "pointer-events-none opacity-50" : ""}
                               />
                             </PaginationItem>
                           </PaginationContent>

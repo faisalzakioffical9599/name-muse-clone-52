@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Baby, HeartHandshake } from "lucide-react";
 import Header from "../components/Header";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "@/components/SearchBar";
 import AlphabetNav from "../components/AlphabetNav";
 import FeaturedNames from "../components/FeaturedNames";
 import RegionalCategories from "../components/RegionalCategories";
@@ -13,7 +13,6 @@ const Index = () => {
   const [selectedLetter, setSelectedLetter] = useState<string | undefined>(undefined);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
-  // Scroll to top button visibility
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollToTop(window.scrollY > 500);
@@ -30,7 +29,6 @@ const Index = () => {
     });
   };
 
-  // Mock data for names by letter - would come from API
   const mockNamesByLetter = [
     {
       id: "a1",
@@ -96,7 +94,6 @@ const Index = () => {
         </div>
       </Header>
       
-      {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-16 md:pb-24 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center animate-fade-in-up">
@@ -107,10 +104,13 @@ const Index = () => {
               Explore thousands of beautiful names with meanings, origins, and traditions.
             </p>
             
-            {/* Search Bar */}
-            <SearchBar className="mb-8" />
+            <SearchBar 
+              className="mb-6"
+              onSearch={(query) => {
+                console.log("Searching:", query);
+              }}
+            />
             
-            {/* Category Buttons */}
             <div className="flex flex-wrap justify-center gap-4">
               <Link 
                 to="/boy-names"
@@ -138,7 +138,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Regional Categories Section */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-8">
@@ -152,7 +151,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Popular Names Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <FeaturedNames 
@@ -163,7 +161,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Browse by Alphabet Section */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-8">
@@ -207,7 +204,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Recently Added Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <FeaturedNames 
@@ -228,7 +224,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Footer */}
       <footer className="py-12 px-4 border-t border-gray-200">
         <div className="container mx-auto max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -279,7 +274,6 @@ const Index = () => {
         </div>
       </footer>
       
-      {/* Scroll to top button */}
       {showScrollToTop && (
         <button
           onClick={scrollToTop}

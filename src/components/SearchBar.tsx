@@ -2,8 +2,10 @@
 import { useState, useEffect } from "react";
 import EnhancedSearchBar, { EnhancedSearchBarProps } from "./EnhancedSearchBar";
 
-// Re-export the props type for compatibility
-export interface SearchBarProps extends EnhancedSearchBarProps {}
+// Re-export the props type but make onSearch optional
+export interface SearchBarProps extends Omit<EnhancedSearchBarProps, 'onSearch'> {
+  onSearch?: EnhancedSearchBarProps['onSearch'];
+}
 
 const SearchBar = ({ 
   className, 

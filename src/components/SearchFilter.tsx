@@ -83,7 +83,7 @@ const SearchFilter = ({
   };
 
   const resetFilters = () => {
-    const defaultFilters = {
+    const defaultFilters: FilterOptions = {
       gender: "all",
       countries: [],
       religions: [],
