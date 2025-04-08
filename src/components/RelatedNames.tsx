@@ -40,8 +40,8 @@ const RelatedNames = ({ gender, origin, religion, language, nameId }: RelatedNam
         if (religion) params.religion = religion;
         if (language) params.language = language;
         
-        // Fetch related names from API
-        const response = await clientApi.names.getAll(params);
+        // Fetch related names from API - using getAllNames instead of getAll
+        const response = await clientApi.names.getAllNames(params);
         
         if (response && response.success && response.data) {
           // Filter out the current name if nameId is provided
