@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -1045,4 +1046,187 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
             {famousPeople.map((person, index) => (
               <Card key={index} className="bg-muted/50 border-muted">
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">Person #{index + 1}</CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleRemoveFamousPerson(index)}
+                      disabled={famousPeople.length === 1}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Remove</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label>Name</Label>
+                      <Input
+                        value={person.name}
+                        onChange={(e) => handleFamousPersonChange(index, "name", e.target.value)}
+                        placeholder="Full name"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={person.description}
+                        onChange={(e) => handleFamousPersonChange(index, "description", e.target.value)}
+                        placeholder="Brief biography"
+                        className="resize-none"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleAddFamousPerson}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Famous Person
+            </Button>
+          </div>
+        </FormSection>
+
+        {/* FAQs Section */}
+        <FormSection>
+          <FormSectionTitle className="flex items-center">
+            <Info className="mr-2 h-5 w-5" />
+            Name FAQs
+          </FormSectionTitle>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="bg-muted/50 border-muted">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">FAQ #{index + 1}</CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleRemoveFaq(index)}
+                      disabled={faqs.length === 1}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Remove</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label>Question</Label>
+                      <Input
+                        value={faq.question}
+                        onChange={(e) => handleFaqChange(index, "question", e.target.value)}
+                        placeholder="e.g., What does the name mean?"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Answer</Label>
+                      <Textarea
+                        value={faq.answer}
+                        onChange={(e) => handleFaqChange(index, "answer", e.target.value)}
+                        placeholder="Answer to the question"
+                        className="resize-none"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleAddFaq}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add FAQ
+            </Button>
+          </div>
+        </FormSection>
+
+        {/* SEO Section */}
+        <FormSection>
+          <FormSectionTitle className="flex items-center">
+            <Globe className="mr-2 h-5 w-5" />
+            SEO Information
+          </FormSectionTitle>
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="seoTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="SEO-optimized title" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Optimal length: 50-60 characters
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="seoDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="SEO meta description" 
+                      className="resize-none" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Optimal length: 150-160 characters
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="seoKeywords"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO Keywords</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Comma-separated keywords" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Separate keywords with commas
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </FormSection>
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Saving..." : initialValues ? "Update Name" : "Create Name"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+export default NameForm;
