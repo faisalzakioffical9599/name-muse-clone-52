@@ -33,6 +33,7 @@ const EnhancedSearchBar = ({
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   useEffect(() => {
     // Update search term if initialSearchTerm changes
@@ -44,6 +45,18 @@ const EnhancedSearchBar = ({
     setFilters(initialFilters);
   }, [initialFilters]);
 
+  useEffect(() => {
+    // Calculate active filters count
+    let count = 0;
+    if (filters.gender && filters.gender !== "all") count++;
+    if (filters.countries && filters.countries.length > 0) count++;
+    if (filters.religions && filters.religions.length > 0) count++;
+    if (filters.languages && filters.languages.length > 0) count++;
+    if (filters.sortBy && filters.sortBy !== "alphabetical-asc") count++;
+    
+    setActiveFiltersCount(count);
+  }, [filters]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchTerm, filters);
@@ -51,7 +64,8 @@ const EnhancedSearchBar = ({
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
-    // Don't trigger search automatically when filters change
+    // Apply filters immediately
+    onSearch(searchTerm, newFilters);
   };
 
   const clearSearch = () => {
@@ -98,13 +112,18 @@ const EnhancedSearchBar = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center text-xs"
+                className="flex items-center text-xs gap-1"
               >
                 <SlidersHorizontal size={14} className="mr-1" />
                 Filters
+                {activeFiltersCount > 0 && (
+                  <span className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground w-4 h-4 text-[10px]">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="right" className="overflow-y-auto">
               <SheetHeader className="mb-4">
                 <SheetTitle>Search Filters</SheetTitle>
               </SheetHeader>
@@ -112,7 +131,6 @@ const EnhancedSearchBar = ({
                 onFilterChange={(newFilters) => {
                   handleFilterChange(newFilters);
                   setIsFilterOpen(false);
-                  onSearch(searchTerm, newFilters);
                 }} 
                 initialValues={filters}
                 showResetButton
@@ -126,7 +144,7 @@ const EnhancedSearchBar = ({
             variant="default"
             className="text-xs"
           >
-            Apply Filters
+            Search
           </Button>
         </div>
       </form>

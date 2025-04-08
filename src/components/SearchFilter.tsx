@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from "react";
-import { Filter, Trash, Check, ChevronDown } from "lucide-react";
+import { Filter, Trash, Check, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -53,7 +54,7 @@ const SearchFilter = ({
   onFilterChange,
   className,
   initialValues = {
-    gender: "all",
+    gender: "all" as "all",
     countries: [],
     religions: [],
     languages: [],
@@ -63,6 +64,9 @@ const SearchFilter = ({
 }: SearchFilterProps) => {
   const [filters, setFilters] = useState<FilterOptions>(initialValues);
   const [isFilterSheet, setIsFilterSheet] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [religionSearch, setReligionSearch] = useState("");
+  const [languageSearch, setLanguageSearch] = useState("");
 
   // Update filters if initialValues changes
   useEffect(() => {
@@ -84,7 +88,7 @@ const SearchFilter = ({
 
   const resetFilters = () => {
     const defaultFilters: FilterOptions = {
-      gender: "all",
+      gender: "all" as "all",
       countries: [],
       religions: [],
       languages: [],
@@ -92,6 +96,9 @@ const SearchFilter = ({
     };
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
+    setCountrySearch("");
+    setReligionSearch("");
+    setLanguageSearch("");
   };
 
   const toggleArrayFilter = (key: string, value: string) => {
@@ -102,22 +109,64 @@ const SearchFilter = ({
     updateFilter(key, newValues);
   };
 
-  // Mock data for filter options
+  // Extended country options (200+)
   const countryOptions = [
-    "Arabic", "English", "French", "Greek", "Germanic", 
-    "Hebrew", "Indian", "Irish", "Italian", "Japanese", 
-    "Latin", "Nordic", "Persian", "Russian", "Spanish"
+    "Afghan", "Albanian", "Algerian", "American", "Andorran", "Angolan", "Arabic", 
+    "Argentine", "Armenian", "Australian", "Austrian", "Azerbaijani", "Bahamian", 
+    "Bahraini", "Bangladeshi", "Barbadian", "Belarusian", "Belgian", "Belizean", 
+    "Beninese", "Bhutanese", "Bolivian", "Bosnian", "Botswanan", "Brazilian", 
+    "British", "Bruneian", "Bulgarian", "Burkinabe", "Burmese", "Burundian", 
+    "Cambodian", "Cameroonian", "Canadian", "Cape Verdean", "Central African", 
+    "Chadian", "Chilean", "Chinese", "Colombian", "Comoran", "Congolese", 
+    "Costa Rican", "Croatian", "Cuban", "Cypriot", "Czech", "Danish", 
+    "Djibouti", "Dominican", "Dutch", "East Timorese", "Ecuadorian", "Egyptian", 
+    "Emirian", "English", "Equatorial Guinean", "Eritrean", "Estonian", "Ethiopian", 
+    "Fijian", "Filipino", "Finnish", "French", "Gabonese", "Gambian", "Georgian", 
+    "German", "Ghanaian", "Greek", "Grenadian", "Guatemalan", "Guinean", 
+    "Guinea-Bissauan", "Guyanese", "Haitian", "Herzegovinian", "Honduran", 
+    "Hungarian", "Icelandic", "Indian", "Indonesian", "Iranian", "Iraqi", "Irish", 
+    "Israeli", "Italian", "Ivorian", "Jamaican", "Japanese", "Jordanian", 
+    "Kazakhstani", "Kenyan", "Kittian and Nevisian", "Kuwaiti", "Kyrgyz", "Laotian", 
+    "Latvian", "Lebanese", "Liberian", "Libyan", "Liechtensteiner", "Lithuanian", 
+    "Luxembourger", "Macedonian", "Malagasy", "Malawian", "Malaysian", "Maldivan", 
+    "Malian", "Maltese", "Marshallese", "Mauritanian", "Mauritian", "Mexican", 
+    "Micronesian", "Moldovan", "Monacan", "Mongolian", "Moroccan", "Mosotho", 
+    "Motswana", "Mozambican", "Namibian", "Nauruan", "Nepalese", "New Zealander", 
+    "Nicaraguan", "Nigerian", "Nigerien", "North Korean", "Northern Irish", "Norwegian", 
+    "Omani", "Pakistani", "Palauan", "Panamanian", "Papua New Guinean", "Paraguayan", 
+    "Peruvian", "Polish", "Portuguese", "Qatari", "Romanian", "Russian", "Rwandan", 
+    "Saint Lucian", "Salvadoran", "Samoan", "San Marinese", "Sao Tomean", "Saudi", 
+    "Scottish", "Senegalese", "Serbian", "Seychellois", "Sierra Leonean", "Singaporean", 
+    "Slovakian", "Slovenian", "Solomon Islander", "Somali", "South African", 
+    "South Korean", "Spanish", "Sri Lankan", "Sudanese", "Surinamer", "Swazi", 
+    "Swedish", "Swiss", "Syrian", "Taiwanese", "Tajik", "Tanzanian", "Thai", 
+    "Togolese", "Tongan", "Trinidadian or Tobagonian", "Tunisian", "Turkish", 
+    "Tuvaluan", "Ugandan", "Ukrainian", "Uruguayan", "Uzbekistani", "Venezuelan", 
+    "Vietnamese", "Welsh", "Yemenite", "Zambian", "Zimbabwean", "Nordic", "Germanic", 
+    "Slavic", "Baltic", "Celtic", "Finno-Ugric", "Latin", "Polynesian", "Aztec", "Incan", 
+    "Mayan", "Native American", "Aboriginal", "Maori", "Hindi", "Sanskrit", "Persian", 
+    "Hebrew", "Aramaic", "Turkish", "Mongolian", "Cherokee", "Navajo", "Zulu", "Xhosa"
   ];
   
   const religionOptions = [
-    "Buddhism", "Christianity", "Hinduism", "Islam", 
-    "Judaism", "Sikhism", "Secular"
+    "Buddhism", "Christianity", "Hinduism", "Islam", "Jainism", "Judaism", 
+    "Sikhism", "Secular", "Baha'i", "Confucianism", "Shinto", "Taoism", 
+    "Zoroastrianism", "Traditional/Folk", "Rastafari", "Pagan", "Wiccan"
   ];
   
   const languageOptions = [
-    "Arabic", "English", "French", "Gaelic", "German", 
-    "Greek", "Hebrew", "Hindi", "Italian", "Japanese", 
-    "Latin", "Persian", "Russian", "Sanskrit", "Spanish"
+    "Arabic", "Bengali", "Chinese", "Dutch", "English", "French", "Gaelic", 
+    "German", "Greek", "Hebrew", "Hindi", "Italian", "Japanese", "Korean", 
+    "Latin", "Malay", "Mandarin", "Norwegian", "Persian", "Polish", "Portuguese", 
+    "Punjabi", "Russian", "Sanskrit", "Spanish", "Swahili", "Swedish", "Tamil", 
+    "Telugu", "Thai", "Turkish", "Urdu", "Vietnamese", "Welsh", "Yiddish", "Zulu",
+    "Albanian", "Amharic", "Armenian", "Azerbaijani", "Basque", "Belarusian",
+    "Bulgarian", "Catalan", "Croatian", "Czech", "Danish", "Estonian", "Finnish",
+    "Georgian", "Hawaiian", "Hungarian", "Icelandic", "Indonesian", "Irish",
+    "Javanese", "Kazakh", "Khmer", "Kurdish", "Lao", "Latvian", "Lithuanian",
+    "Macedonian", "Malagasy", "Maltese", "Maori", "Marathi", "Mongolian",
+    "Nepali", "Pashto", "Romanian", "Serbian", "Slovak", "Slovenian", "Somali", 
+    "Tagalog", "Tajik", "Tibetan", "Ukrainian", "Uzbek"
   ];
 
   const sortOptions = [
@@ -126,6 +175,24 @@ const SearchFilter = ({
     { label: "Popularity: High to Low", value: "popularity-desc" },
     { label: "Popularity: Low to High", value: "popularity-asc" }
   ];
+
+  const filteredCountries = countrySearch
+    ? countryOptions.filter(country => 
+        country.toLowerCase().includes(countrySearch.toLowerCase())
+      )
+    : countryOptions;
+
+  const filteredReligions = religionSearch
+    ? religionOptions.filter(religion => 
+        religion.toLowerCase().includes(religionSearch.toLowerCase())
+      )
+    : religionOptions;
+
+  const filteredLanguages = languageSearch
+    ? languageOptions.filter(language => 
+        language.toLowerCase().includes(languageSearch.toLowerCase())
+      )
+    : languageOptions;
 
   // Dropdown version for desktop
   const FilterDropdown = () => (
@@ -163,7 +230,7 @@ const SearchFilter = ({
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup
               value={filters.gender}
-              onValueChange={(value) => updateFilter("gender", value)}
+              onValueChange={(value: "all" | "boy" | "girl" | "unisex") => updateFilter("gender", value)}
             >
               <DropdownMenuRadioItem value="all">All Genders</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="boy">Boy</DropdownMenuRadioItem>
@@ -186,24 +253,36 @@ const SearchFilter = ({
             </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="max-h-60 overflow-y-auto">
-            {countryOptions.map((country) => (
-              <DropdownMenuItem
-                key={country}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  toggleArrayFilter("countries", country);
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  {filters.countries?.includes(country) ? (
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  ) : (
-                    <div className="w-3.5" />
-                  )}
-                  {country}
-                </div>
-              </DropdownMenuItem>
-            ))}
+            <div className="p-2">
+              <Input 
+                placeholder="Search origins..." 
+                value={countrySearch} 
+                onChange={e => setCountrySearch(e.target.value)} 
+                className="mb-2"
+              />
+            </div>
+            {filteredCountries.length > 0 ? (
+              filteredCountries.map((country) => (
+                <DropdownMenuItem
+                  key={country}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    toggleArrayFilter("countries", country);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    {filters.countries?.includes(country) ? (
+                      <Check className="h-3.5 w-3.5 text-primary" />
+                    ) : (
+                      <div className="w-3.5" />
+                    )}
+                    {country}
+                  </div>
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="px-2 py-1 text-sm text-muted-foreground">No origins found</div>
+            )}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         
@@ -220,24 +299,36 @@ const SearchFilter = ({
             </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            {religionOptions.map((religion) => (
-              <DropdownMenuItem
-                key={religion}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  toggleArrayFilter("religions", religion);
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  {filters.religions?.includes(religion) ? (
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  ) : (
-                    <div className="w-3.5" />
-                  )}
-                  {religion}
-                </div>
-              </DropdownMenuItem>
-            ))}
+            <div className="p-2">
+              <Input 
+                placeholder="Search religions..." 
+                value={religionSearch} 
+                onChange={e => setReligionSearch(e.target.value)} 
+                className="mb-2"
+              />
+            </div>
+            {filteredReligions.length > 0 ? (
+              filteredReligions.map((religion) => (
+                <DropdownMenuItem
+                  key={religion}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    toggleArrayFilter("religions", religion);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    {filters.religions?.includes(religion) ? (
+                      <Check className="h-3.5 w-3.5 text-primary" />
+                    ) : (
+                      <div className="w-3.5" />
+                    )}
+                    {religion}
+                  </div>
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="px-2 py-1 text-sm text-muted-foreground">No religions found</div>
+            )}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         
@@ -254,24 +345,36 @@ const SearchFilter = ({
             </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="max-h-60 overflow-y-auto">
-            {languageOptions.map((language) => (
-              <DropdownMenuItem
-                key={language}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  toggleArrayFilter("languages", language);
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  {filters.languages?.includes(language) ? (
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  ) : (
-                    <div className="w-3.5" />
-                  )}
-                  {language}
-                </div>
-              </DropdownMenuItem>
-            ))}
+            <div className="p-2">
+              <Input 
+                placeholder="Search languages..." 
+                value={languageSearch} 
+                onChange={e => setLanguageSearch(e.target.value)} 
+                className="mb-2"
+              />
+            </div>
+            {filteredLanguages.length > 0 ? (
+              filteredLanguages.map((language) => (
+                <DropdownMenuItem
+                  key={language}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    toggleArrayFilter("languages", language);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    {filters.languages?.includes(language) ? (
+                      <Check className="h-3.5 w-3.5 text-primary" />
+                    ) : (
+                      <div className="w-3.5" />
+                    )}
+                    {language}
+                  </div>
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="px-2 py-1 text-sm text-muted-foreground">No languages found</div>
+            )}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         
@@ -339,7 +442,7 @@ const SearchFilter = ({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Filter Options</SheetTitle>
           <SheetDescription>
@@ -366,7 +469,7 @@ const SearchFilter = ({
                       variant={filters.gender === gender ? "default" : "outline"}
                       size="sm"
                       className="w-full justify-start"
-                      onClick={() => updateFilter("gender", gender)}
+                      onClick={() => updateFilter("gender", gender as "all" | "boy" | "girl" | "unisex")}
                     >
                       {gender === "all" ? "All Genders" : gender.charAt(0).toUpperCase() + gender.slice(1)}
                     </Button>
@@ -385,22 +488,36 @@ const SearchFilter = ({
                   </Badge>
                 )}
               </AccordionTrigger>
-              <AccordionContent className="space-y-2 max-h-60 overflow-y-auto">
-                {countryOptions.map((country) => (
-                  <div key={country} className="flex items-center gap-2">
-                    <Button
-                      variant={filters.countries?.includes(country) ? "default" : "outline"}
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => toggleArrayFilter("countries", country)}
-                    >
-                      {filters.countries?.includes(country) && (
-                        <Check className="h-3.5 w-3.5 mr-2" />
-                      )}
-                      {country}
-                    </Button>
-                  </div>
-                ))}
+              <AccordionContent className="space-y-2">
+                <div className="relative mb-2">
+                  <Input 
+                    placeholder="Search origins..." 
+                    value={countrySearch} 
+                    onChange={e => setCountrySearch(e.target.value)}
+                    className="pr-8"
+                  />
+                  <Search className="absolute right-2 top-2 h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredCountries.map((country) => (
+                    <div key={country} className="flex items-center gap-2">
+                      <Button
+                        variant={filters.countries?.includes(country) ? "default" : "outline"}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => toggleArrayFilter("countries", country)}
+                      >
+                        {filters.countries?.includes(country) && (
+                          <Check className="h-3.5 w-3.5 mr-2" />
+                        )}
+                        {country}
+                      </Button>
+                    </div>
+                  ))}
+                  {filteredCountries.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">No origins found</p>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
             
@@ -415,21 +532,35 @@ const SearchFilter = ({
                 )}
               </AccordionTrigger>
               <AccordionContent className="space-y-2">
-                {religionOptions.map((religion) => (
-                  <div key={religion} className="flex items-center gap-2">
-                    <Button
-                      variant={filters.religions?.includes(religion) ? "default" : "outline"}
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => toggleArrayFilter("religions", religion)}
-                    >
-                      {filters.religions?.includes(religion) && (
-                        <Check className="h-3.5 w-3.5 mr-2" />
-                      )}
-                      {religion}
-                    </Button>
-                  </div>
-                ))}
+                <div className="relative mb-2">
+                  <Input 
+                    placeholder="Search religions..." 
+                    value={religionSearch} 
+                    onChange={e => setReligionSearch(e.target.value)}
+                    className="pr-8"
+                  />
+                  <Search className="absolute right-2 top-2 h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredReligions.map((religion) => (
+                    <div key={religion} className="flex items-center gap-2">
+                      <Button
+                        variant={filters.religions?.includes(religion) ? "default" : "outline"}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => toggleArrayFilter("religions", religion)}
+                      >
+                        {filters.religions?.includes(religion) && (
+                          <Check className="h-3.5 w-3.5 mr-2" />
+                        )}
+                        {religion}
+                      </Button>
+                    </div>
+                  ))}
+                  {filteredReligions.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">No religions found</p>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
             
@@ -443,22 +574,36 @@ const SearchFilter = ({
                   </Badge>
                 )}
               </AccordionTrigger>
-              <AccordionContent className="space-y-2 max-h-60 overflow-y-auto">
-                {languageOptions.map((language) => (
-                  <div key={language} className="flex items-center gap-2">
-                    <Button
-                      variant={filters.languages?.includes(language) ? "default" : "outline"}
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => toggleArrayFilter("languages", language)}
-                    >
-                      {filters.languages?.includes(language) && (
-                        <Check className="h-3.5 w-3.5 mr-2" />
-                      )}
-                      {language}
-                    </Button>
-                  </div>
-                ))}
+              <AccordionContent className="space-y-2">
+                <div className="relative mb-2">
+                  <Input 
+                    placeholder="Search languages..." 
+                    value={languageSearch} 
+                    onChange={e => setLanguageSearch(e.target.value)}
+                    className="pr-8"
+                  />
+                  <Search className="absolute right-2 top-2 h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredLanguages.map((language) => (
+                    <div key={language} className="flex items-center gap-2">
+                      <Button
+                        variant={filters.languages?.includes(language) ? "default" : "outline"}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => toggleArrayFilter("languages", language)}
+                      >
+                        {filters.languages?.includes(language) && (
+                          <Check className="h-3.5 w-3.5 mr-2" />
+                        )}
+                        {language}
+                      </Button>
+                    </div>
+                  ))}
+                  {filteredLanguages.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">No languages found</p>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
             

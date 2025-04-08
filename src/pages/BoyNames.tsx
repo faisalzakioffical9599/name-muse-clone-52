@@ -13,7 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import NameCard, { NameCardProps } from "../components/NameCard";
-import SearchBar from "../components/SearchBar";
+import EnhancedSearchBar from "../components/EnhancedSearchBar";
 import PopularNamesSidebar from "../components/PopularNamesSidebar";
 import { clientApi } from "../services/clientApi";
 import { FilterOptions } from "../components/SearchFilter";
@@ -35,19 +35,42 @@ const BoyNames = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFilters, setSearchFilters] = useState<FilterOptions>({});
+  const [searchFilters, setSearchFilters] = useState<FilterOptions>({
+    gender: "boy",
+    countries: [],
+    religions: [],
+    languages: [],
+    sortBy: "alphabetical-asc"
+  });
 
   // Fetch boy names from API
   useEffect(() => {
     const fetchBoyNames = async () => {
       setIsLoading(true);
       try {
-        const response = await clientApi.names.getBoyNames({
+        // Convert filters to API parameters
+        const apiParams: any = {
           page,
           limit: 9,
           search: searchQuery,
-          ...searchFilters
-        });
+          gender: "boy" // Always set gender to boy on this page
+        };
+        
+        // Add other filters
+        if (searchFilters.countries && searchFilters.countries.length > 0) {
+          apiParams.origin = searchFilters.countries.join(",");
+        }
+        if (searchFilters.religions && searchFilters.religions.length > 0) {
+          apiParams.religion = searchFilters.religions.join(",");
+        }
+        if (searchFilters.languages && searchFilters.languages.length > 0) {
+          apiParams.language = searchFilters.languages.join(",");
+        }
+        if (searchFilters.sortBy) {
+          apiParams.sort = searchFilters.sortBy;
+        }
+        
+        const response = await clientApi.names.getBoyNames(apiParams);
         
         if (response && response.data) {
           const typedData = response.data.map(item => ({
@@ -103,7 +126,11 @@ const BoyNames = () => {
 
   const handleSearch = (query: string, filters: FilterOptions) => {
     setSearchQuery(query);
-    setSearchFilters(filters);
+    // Preserve gender filter as "boy"
+    setSearchFilters({
+      ...filters,
+      gender: "boy"
+    });
     setPage(1);
   };
 
@@ -142,10 +169,18 @@ const BoyNames = () => {
               </div>
               
               {/* Search Bar */}
-              <SearchBar 
+              <EnhancedSearchBar 
                 className="mb-12" 
                 placeholder="Search for boy names..." 
                 onSearch={handleSearch}
+                initialFilters={{
+                  gender: "boy",
+                  countries: searchFilters.countries || [],
+                  religions: searchFilters.religions || [],
+                  languages: searchFilters.languages || [],
+                  sortBy: searchFilters.sortBy || "alphabetical-asc"
+                }}
+                initialSearchTerm={searchQuery}
               />
               
               {/* Names Grid */}
@@ -176,7 +211,13 @@ const BoyNames = () => {
                   <Button 
                     variant="outline" 
                     className="mt-4"
-                    onClick={() => handleSearch("", {})}
+                    onClick={() => handleSearch("", {
+                      gender: "boy",
+                      countries: [],
+                      religions: [],
+                      languages: [],
+                      sortBy: "alphabetical-asc"
+                    })}
                   >
                     Clear Search
                   </Button>

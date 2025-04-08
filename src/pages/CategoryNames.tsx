@@ -26,7 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import SearchBar from "@/components/SearchBar"; // Fix: import directly
+import EnhancedSearchBar from "@/components/EnhancedSearchBar";
+import { FilterOptions } from "@/components/SearchFilter";
 
 // Define interface to match the CategoryData returned from API
 interface Category {
@@ -49,6 +50,13 @@ const CategoryNames = () => {
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<FilterOptions>({
+    gender: "all",
+    countries: [],
+    religions: [],
+    languages: [],
+    sortBy: "alphabetical-asc"
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,6 +86,7 @@ const CategoryNames = () => {
           limit: limit.toString(),
           [categoryType as string]: categoryId,
           search: searchQuery,
+          ...createApiFilters(filters)  // Add all filter parameters
         });
 
         if (namesResponse.success) {
@@ -113,7 +122,34 @@ const CategoryNames = () => {
     };
 
     fetchCategoryAndNames();
-  }, [categoryType, categoryId, page, limit, searchQuery, toast]);
+  }, [categoryType, categoryId, page, limit, searchQuery, filters, toast]);
+
+  // Helper function to convert filter options to API parameters
+  const createApiFilters = (filterOptions: FilterOptions) => {
+    const apiFilters: Record<string, string> = {};
+    
+    if (filterOptions.gender && filterOptions.gender !== "all") {
+      apiFilters.gender = filterOptions.gender;
+    }
+    
+    if (filterOptions.countries && filterOptions.countries.length > 0) {
+      apiFilters.origin = filterOptions.countries.join(",");
+    }
+    
+    if (filterOptions.religions && filterOptions.religions.length > 0) {
+      apiFilters.religion = filterOptions.religions.join(",");
+    }
+    
+    if (filterOptions.languages && filterOptions.languages.length > 0) {
+      apiFilters.language = filterOptions.languages.join(",");
+    }
+    
+    if (filterOptions.sortBy) {
+      apiFilters.sort = filterOptions.sortBy;
+    }
+    
+    return apiFilters;
+  };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -124,9 +160,10 @@ const CategoryNames = () => {
     setPage(1); // Reset to the first page when limit changes
   };
 
-  const handleSearch = (searchTerm: string) => {
+  const handleSearch = (searchTerm: string, newFilters: FilterOptions) => {
     setSearchQuery(searchTerm);
-    setPage(1); // Reset to the first page when searching
+    setFilters(newFilters);
+    setPage(1); // Reset to the first page when searching or filtering
   };
 
   // Generate pagination items
@@ -199,14 +236,11 @@ const CategoryNames = () => {
         <p>Loading category details...</p>
       )}
 
-      <SearchBar 
+      <EnhancedSearchBar 
         className="mb-6" 
         placeholder="Search within this category..." 
-        onSearch={(query) => {
-          // Implement search functionality
-          console.log("Searching:", query);
-          handleSearch(query)
-        }}
+        onSearch={handleSearch}
+        initialFilters={filters}
       />
 
       {isLoading ? (
@@ -214,47 +248,82 @@ const CategoryNames = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {names.map((name) => (
-              <NameCard key={name.id} {...name} />
-            ))}
+            {names.length > 0 ? (
+              names.map((name) => (
+                <NameCard key={name.id} {...name} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-10 bg-gray-50 rounded-lg">
+                <p className="text-lg text-gray-500">No names found matching your criteria.</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setFilters({
+                      gender: "all",
+                      countries: [],
+                      religions: [],
+                      languages: [],
+                      sortBy: "alphabetical-asc"
+                    });
+                    setPage(1);
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center justify-between mt-8">
-            <span>Total names: {total}</span>
-            <div className="flex items-center gap-4">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(page - 1)}
-                      className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                  {getPaginationItems()}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => handlePageChange(page + 1)}
-                      className={page * limit >= total ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-              <Select
-                value={limit.toString()}
-                onValueChange={(value) => handleLimitChange(parseInt(value))}
-              >
-                <SelectTrigger className="w-[80px]">
-                  <SelectValue placeholder="Limit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="12">12</SelectItem>
-                  <SelectItem value="24">24</SelectItem>
-                  <SelectItem value="48">48</SelectItem>
-                  <SelectItem value="96">96</SelectItem>
-                </SelectContent>
-              </Select>
+          {names.length > 0 && (
+            <div className="flex items-center justify-between mt-8">
+              <span>Total names: {total}</span>
+              <div className="flex items-center gap-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(page - 1)}
+                        disabled={page === 1}
+                        className={page === 1 ? "opacity-50" : ""}
+                      >
+                        <PaginationPrevious className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                    {getPaginationItems()}
+                    <PaginationItem>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(page + 1)}
+                        disabled={page * limit >= total}
+                        className={page * limit >= total ? "opacity-50" : ""}
+                      >
+                        <PaginationNext className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+                <Select
+                  value={limit.toString()}
+                  onValueChange={(value) => handleLimitChange(parseInt(value))}
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="Limit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12">12</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
+                    <SelectItem value="48">48</SelectItem>
+                    <SelectItem value="96">96</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>
