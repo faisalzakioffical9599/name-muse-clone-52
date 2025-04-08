@@ -28,8 +28,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import SearchBar from "@/components/SearchBar"; // Fix: import directly
 
+// Define interface to match the CategoryData returned from API
 interface Category {
-  id: string;
+  id: string; // We'll convert the number to string when using API data
   name: string;
   type?: "religion" | "language" | "country";
   description?: string;
@@ -57,7 +58,11 @@ const CategoryNames = () => {
         // Fetch category details - fix the API call
         const categoryResponse = await api.categories.getById(categoryId as string);
         if (categoryResponse.success) {
-          setCategory(categoryResponse.data);
+          // Convert the CategoryData to Category interface, ensuring id is a string
+          setCategory({
+            ...categoryResponse.data,
+            id: String(categoryResponse.data.id) // Convert number id to string
+          });
         } else {
           toast({
             title: "Error fetching category",
@@ -79,9 +84,10 @@ const CategoryNames = () => {
           // Fix: ensure we map the data to match the NameCardProps type
           const mappedNames = namesResponse.data.map(name => ({
             ...name,
+            id: String(name.id), // Ensure id is a string
             // Ensure gender is one of the allowed types
-            gender: (name.gender as string === 'boy' || name.gender as string === 'girl' || 
-                    name.gender as string === 'unisex') ? 
+            gender: (name.gender === 'boy' || name.gender === 'girl' || 
+                    name.gender === 'unisex') ? 
                     (name.gender as "boy" | "girl" | "unisex") : "unisex"
           }));
           
