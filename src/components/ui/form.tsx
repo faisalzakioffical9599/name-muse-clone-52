@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -164,6 +165,58 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
+// New component for form sections
+const FormSection = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn("border rounded-md p-4 mb-4", className)}
+      {...props}
+    />
+  )
+})
+FormSection.displayName = "FormSection"
+
+// New component for form section title
+const FormSectionTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <h3
+      ref={ref}
+      className={cn("font-medium text-lg mb-3", className)}
+      {...props}
+    />
+  )
+})
+FormSectionTitle.displayName = "FormSectionTitle"
+
+// New component for form fields in a grid layout
+const FormGrid = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { columns?: number }
+>(({ className, columns = 2, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "grid gap-4", 
+        columns === 1 ? "grid-cols-1" : 
+        columns === 2 ? "grid-cols-1 md:grid-cols-2" : 
+        columns === 3 ? "grid-cols-1 md:grid-cols-3" : 
+        "grid-cols-1 md:grid-cols-2",
+        className
+      )}
+      {...props}
+    />
+  )
+})
+FormGrid.displayName = "FormGrid"
+
 export {
   useFormField,
   Form,
@@ -173,4 +226,7 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormSection,
+  FormSectionTitle,
+  FormGrid,
 }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast";
-import { MoreVertical, Edit, Trash, Plus, FileInput, ArrowDownToLine } from "lucide-react";
+import { MoreVertical, Edit, Trash, Plus, FileInput, ArrowDownToLine, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +53,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormSection,
+  FormSectionTitle,
+  FormGrid,
 } from "@/components/ui/form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -65,10 +69,13 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "../services/api";
 import { FilterOptions } from "@/components/SearchFilter";
 
-// Define a schema for name validation
+// Define a schema for name validation with all required fields
 const nameSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
@@ -105,6 +112,9 @@ const nameSchema = z.object({
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   seoKeywords: z.string().optional(),
+  syllables: z.number().optional(),
+  isFeatured: z.boolean().optional(),
+  status: z.enum(['active', 'pending', 'archived']).default('active'),
 });
 
 // Define the types for the data
@@ -131,6 +141,9 @@ interface NameData {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  syllables?: number;
+  isFeatured?: boolean;
+  status?: 'active' | 'pending' | 'archived';
 }
 
 // Define a more specific type for API inputs that matches what we're sending
@@ -156,6 +169,9 @@ interface NameDataInput {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  syllables?: number;
+  isFeatured?: boolean;
+  status?: 'active' | 'pending' | 'archived';
 }
 
 const ManageNames = () => {
@@ -171,6 +187,11 @@ const ManageNames = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
+  const [newFamousPerson, setNewFamousPerson] = useState({ name: '', description: '' });
+  const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
+  const [newVariation, setNewVariation] = useState('');
+  const [newPersonality, setNewPersonality] = useState('');
   const { toast } = useToast();
 
   // Form for creating and editing names
@@ -198,8 +219,14 @@ const ManageNames = () => {
       seoTitle: "",
       seoDescription: "",
       seoKeywords: "",
+      syllables: 0,
+      isFeatured: false,
+      status: 'active'
     },
   });
+
+  // Function to get form values
+  const getFormValues = () => form.getValues();
 
   // Fetch names from API
   useEffect(() => {
@@ -290,7 +317,10 @@ const ManageNames = () => {
       nameFaqs: nameFaqs,
       seoTitle: values.seoTitle,
       seoDescription: values.seoDescription,
-      seoKeywords: values.seoKeywords
+      seoKeywords: values.seoKeywords,
+      syllables: values.syllables,
+      isFeatured: values.isFeatured,
+      status: values.status
     };
 
     return result;
@@ -427,14 +457,23 @@ const ManageNames = () => {
           }
   
           // If all names are valid, proceed to create them
+          const successCount = 0;
+          const failCount = 0;
+          
           for (const name of importedNames) {
-            const apiInput = convertFormValuesToApiInput(name);
-            await api.names.create(apiInput);
+            try {
+              const apiInput = convertFormValuesToApiInput(name);
+              await api.names.create(apiInput);
+              successCount++;
+            } catch (error) {
+              console.error("Error importing name:", name, error);
+              failCount++;
+            }
           }
   
           toast({
             title: "Names Imported",
-            description: `Successfully imported ${importedNames.length} names.`,
+            description: `Successfully imported ${successCount} names. Failed: ${failCount}.`,
           });
           setPage(1); // Refresh the name list
         } catch (error) {
@@ -466,6 +505,117 @@ const ManageNames = () => {
     document.body.removeChild(link);
   };
 
+  // Helper functions for form arrays
+  const addFamousPerson = () => {
+    if (newFamousPerson.name && newFamousPerson.description) {
+      const currentPeople = form.getValues('famousPeople') || [];
+      form.setValue('famousPeople', [...currentPeople, newFamousPerson]);
+      setNewFamousPerson({ name: '', description: '' });
+    }
+  };
+
+  const removeFamousPerson = (index: number) => {
+    const currentPeople = form.getValues('famousPeople') || [];
+    form.setValue('famousPeople', currentPeople.filter((_, i) => i !== index));
+  };
+
+  const addFaq = () => {
+    if (newFaq.question && newFaq.answer) {
+      const currentFaqs = form.getValues('nameFaqs') || [];
+      form.setValue('nameFaqs', [...currentFaqs, newFaq]);
+      setNewFaq({ question: '', answer: '' });
+    }
+  };
+
+  const removeFaq = (index: number) => {
+    const currentFaqs = form.getValues('nameFaqs') || [];
+    form.setValue('nameFaqs', currentFaqs.filter((_, i) => i !== index));
+  };
+
+  const addVariation = () => {
+    if (newVariation) {
+      const currentVariations = form.getValues('nameVariations') || [];
+      form.setValue('nameVariations', [...currentVariations, newVariation]);
+      setNewVariation('');
+    }
+  };
+
+  const removeVariation = (index: number) => {
+    const currentVariations = form.getValues('nameVariations') || [];
+    form.setValue('nameVariations', currentVariations.filter((_, i) => i !== index));
+  };
+
+  const addPersonality = () => {
+    if (newPersonality) {
+      const currentPersonalities = form.getValues('personality') || [];
+      form.setValue('personality', [...currentPersonalities, newPersonality]);
+      setNewPersonality('');
+    }
+  };
+
+  const removePersonality = (index: number) => {
+    const currentPersonalities = form.getValues('personality') || [];
+    form.setValue('personality', currentPersonalities.filter((_, i) => i !== index));
+  };
+
+  // Generate pagination items
+  const getPaginationItems = () => {
+    const totalPages = Math.ceil(total / limit);
+    const items = [];
+    
+    // Always show first page
+    items.push(
+      <PaginationItem key="first">
+        <PaginationLink onClick={() => handlePageChange(1)} isActive={page === 1}>
+          1
+        </PaginationLink>
+      </PaginationItem>
+    );
+    
+    // Add ellipsis if needed
+    if (page > 3) {
+      items.push(
+        <PaginationItem key="ellipsis-start">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    
+    // Show current page and neighbors
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+      if (i === 1 || i === totalPages) continue; // Skip first and last page as they're always shown
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink onClick={() => handlePageChange(i)} isActive={page === i}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    // Add ellipsis if needed
+    if (page < totalPages - 2) {
+      items.push(
+        <PaginationItem key="ellipsis-end">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    
+    // Always show last page if there's more than one page
+    if (totalPages > 1) {
+      items.push(
+        <PaginationItem key="last">
+          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={page === totalPages}>
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return items;
+  };
+
   return (
     <div>
       <Card>
@@ -477,18 +627,24 @@ const ManageNames = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-between">
-            {/* Search and Filters will go here */}
-            <Input
-              type="search"
-              placeholder="Search names..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                handleSearch(e.target.value, searchFilters)
-              }}
-            />
+            <div className="flex-1 relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search names..."
+                value={searchQuery}
+                className="pl-8"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value, searchFilters)
+                }}
+              />
+            </div>
             <div className="flex gap-2">
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Button onClick={() => {
+                form.reset();
+                setIsCreateDialogOpen(true);
+              }}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Name
               </Button>
@@ -503,7 +659,7 @@ const ManageNames = () => {
                   <DropdownMenuLabel>Import Names</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
-                    <Label htmlFor="import-names" className="cursor-pointer">
+                    <Label htmlFor="import-names" className="cursor-pointer w-full">
                       Select JSON File
                     </Label>
                     <Input
@@ -524,29 +680,30 @@ const ManageNames = () => {
             </div>
           </div>
 
-          <ScrollArea>
+          <ScrollArea className="h-[600px]">
             <Table>
               <TableCaption>A list of your names.</TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead className="w-[80px]">ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Meaning</TableHead>
                   <TableHead>Gender</TableHead>
                   <TableHead>Origin</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Loading names...
                     </TableCell>
                   </TableRow>
                 ) : names.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       No names found.
                     </TableCell>
                   </TableRow>
@@ -554,10 +711,38 @@ const ManageNames = () => {
                   names.map((name) => (
                     <TableRow key={name.id}>
                       <TableCell className="font-medium">{name.id}</TableCell>
-                      <TableCell>{name.name}</TableCell>
-                      <TableCell>{name.meaning}</TableCell>
-                      <TableCell>{name.gender}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {name.name}
+                          {name.isFeatured && (
+                            <Badge variant="secondary" className="ml-2">Featured</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[200px] truncate">{name.meaning}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            name.gender === 'boy' ? "default" : 
+                            name.gender === 'girl' ? "destructive" : 
+                            "outline"
+                          }
+                        >
+                          {name.gender}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{name.origin}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            name.status === 'active' ? "default" : 
+                            name.status === 'pending' ? "outline" : 
+                            "secondary"
+                          }
+                        >
+                          {name.status || 'active'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -592,6 +777,9 @@ const ManageNames = () => {
                                 seoTitle: name.seoTitle,
                                 seoDescription: name.seoDescription,
                                 seoKeywords: name.seoKeywords,
+                                syllables: name.syllables,
+                                isFeatured: name.isFeatured,
+                                status: (name.status as 'active' | 'pending' | 'archived') || 'active',
                               });
                               setIsEditDialogOpen(true);
                             }}>
@@ -612,29 +800,29 @@ const ManageNames = () => {
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <div className="flex items-center justify-between">
                       <span>Total names: {total}</span>
                       <div className="flex items-center gap-4">
-                        <span>Page: {page}</span>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            onClick={() => handlePageChange(page - 1)}
-                            disabled={page === 1}
-                          >
-                            Previous
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => handlePageChange(page + 1)}
-                            disabled={page * limit >= total}
-                          >
-                            Next
-                          </Button>
-                        </div>
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page === 1}
+                              />
+                            </PaginationItem>
+                            {getPaginationItems()}
+                            <PaginationItem>
+                              <PaginationNext
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page * limit >= total}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
                         <Select value={limit.toString()} onValueChange={(value) => handleLimitChange(parseInt(value))}>
-                          <SelectTrigger className="w-[120px]">
+                          <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Limit" />
                           </SelectTrigger>
                           <SelectContent>
@@ -654,219 +842,602 @@ const ManageNames = () => {
         </CardContent>
       </Card>
 
-      {/* Edit Name Dialog */}
-      <AlertDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Edit Name</AlertDialogTitle>
-            <AlertDialogDescription>
-              Edit the details of the selected name.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+      {/* Name Form Dialog - Used for both Edit and Create */}
+      <Dialog open={isEditDialogOpen || isCreateDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsEditDialogOpen(false);
+          setIsCreateDialogOpen(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{isEditDialogOpen ? "Edit Name" : "Add New Name"}</DialogTitle>
+            <DialogDescription>
+              {isEditDialogOpen ? "Update the details of this name." : "Create a new name with complete details."}
+            </DialogDescription>
+          </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleUpdateName)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="meaning"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meaning</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Meaning" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="boy">Boy</SelectItem>
-                        <SelectItem value="girl">Girl</SelectItem>
-                        <SelectItem value="unisex">Unisex</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="origin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Origin</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Origin" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="religion"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Religion</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Religion" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="language"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Language</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Language" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Edit</Button>
-              </AlertDialogFooter>
+            <form onSubmit={form.handleSubmit(isEditDialogOpen ? handleUpdateName : handleCreateName)} className="space-y-4">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-4 mb-4">
+                  <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                  <TabsTrigger value="details">Additional Details</TabsTrigger>
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="seo">SEO & Settings</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="basic" className="space-y-4">
+                  <FormSection>
+                    <FormSectionTitle>Basic Information</FormSectionTitle>
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="gender"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Gender</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="boy">Boy</SelectItem>
+                                <SelectItem value="girl">Girl</SelectItem>
+                                <SelectItem value="unisex">Unisex</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormField
+                      control={form.control}
+                      name="meaning"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name Meaning</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Meaning of the name" rows={3} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="origin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Origin</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. English, French, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="religion"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Religion</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Christianity, Islam, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="language"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Language</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. English, Arabic, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="pronunciation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pronunciation</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. ah-LEE-sha" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Detailed description of the name" rows={4} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormSection>
+                </TabsContent>
+                
+                <TabsContent value="details" className="space-y-4">
+                  <FormSection>
+                    <FormSectionTitle>Name Attributes</FormSectionTitle>
+                    <FormGrid columns={3}>
+                      <FormField
+                        control={form.control}
+                        name="popularity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Popularity (0-100)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0" 
+                                min={0} 
+                                max={100} 
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="syllables"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Syllables</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0" 
+                                min={1} 
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="numerology"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Numerology</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0" 
+                                min={0} 
+                                max={9} 
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormGrid columns={3}>
+                      <FormField
+                        control={form.control}
+                        name="luckyNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Number</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0" 
+                                min={0} 
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="luckyColor"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Color</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Blue" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="luckyStone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lucky Stone</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Emerald" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                    
+                    <FormField
+                      control={form.control}
+                      name="zodiacSign"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Zodiac Sign</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select zodiac sign (optional)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">None</SelectItem>
+                              <SelectItem value="aries">Aries</SelectItem>
+                              <SelectItem value="taurus">Taurus</SelectItem>
+                              <SelectItem value="gemini">Gemini</SelectItem>
+                              <SelectItem value="cancer">Cancer</SelectItem>
+                              <SelectItem value="leo">Leo</SelectItem>
+                              <SelectItem value="virgo">Virgo</SelectItem>
+                              <SelectItem value="libra">Libra</SelectItem>
+                              <SelectItem value="scorpio">Scorpio</SelectItem>
+                              <SelectItem value="sagittarius">Sagittarius</SelectItem>
+                              <SelectItem value="capricorn">Capricorn</SelectItem>
+                              <SelectItem value="aquarius">Aquarius</SelectItem>
+                              <SelectItem value="pisces">Pisces</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>Variations & Personality</FormSectionTitle>
+                    
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium">Name Variations</h4>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a name variation"
+                          value={newVariation}
+                          onChange={(e) => setNewVariation(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button type="button" onClick={addVariation} disabled={!newVariation}>Add</Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {form.watch('nameVariations')?.map((variation, index) => (
+                          <Badge key={index} className="px-3 py-1">
+                            {variation}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-2"
+                              onClick={() => removeVariation(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 mt-4">
+                      <h4 className="text-sm font-medium">Personality Traits</h4>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a personality trait"
+                          value={newPersonality}
+                          onChange={(e) => setNewPersonality(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button type="button" onClick={addPersonality} disabled={!newPersonality}>Add</Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {form.watch('personality')?.map((trait, index) => (
+                          <Badge key={index} variant="secondary" className="px-3 py-1">
+                            {trait}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-2"
+                              onClick={() => removePersonality(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </FormSection>
+                </TabsContent>
+                
+                <TabsContent value="content" className="space-y-4">
+                  <FormSection>
+                    <FormSectionTitle>Famous People</FormSectionTitle>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Person name"
+                          value={newFamousPerson.name}
+                          onChange={(e) => setNewFamousPerson({...newFamousPerson, name: e.target.value})}
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Brief description"
+                            value={newFamousPerson.description}
+                            onChange={(e) => setNewFamousPerson({...newFamousPerson, description: e.target.value})}
+                            className="flex-1"
+                          />
+                          <Button 
+                            type="button" 
+                            onClick={addFamousPerson}
+                            disabled={!newFamousPerson.name || !newFamousPerson.description}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="border rounded-md divide-y">
+                        {form.watch('famousPeople')?.length === 0 ? (
+                          <p className="text-muted-foreground p-4 text-center">No famous people added yet.</p>
+                        ) : (
+                          form.watch('famousPeople')?.map((person, index) => (
+                            <div key={index} className="p-3 flex justify-between items-center">
+                              <div>
+                                <p className="font-medium">{person.name}</p>
+                                <p className="text-sm text-muted-foreground">{person.description}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFamousPerson(index)}
+                              >
+                                <Trash className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>Name FAQs</FormSectionTitle>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-2">
+                        <Input
+                          placeholder="Question"
+                          value={newFaq.question}
+                          onChange={(e) => setNewFaq({...newFaq, question: e.target.value})}
+                        />
+                        <div className="flex gap-2">
+                          <Textarea
+                            placeholder="Answer"
+                            value={newFaq.answer}
+                            onChange={(e) => setNewFaq({...newFaq, answer: e.target.value})}
+                            className="flex-1"
+                            rows={2}
+                          />
+                          <Button 
+                            type="button" 
+                            onClick={addFaq}
+                            disabled={!newFaq.question || !newFaq.answer}
+                            className="self-start"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="border rounded-md divide-y">
+                        {form.watch('nameFaqs')?.length === 0 ? (
+                          <p className="text-muted-foreground p-4 text-center">No FAQs added yet.</p>
+                        ) : (
+                          form.watch('nameFaqs')?.map((faq, index) => (
+                            <div key={index} className="p-3 flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">{faq.question}</p>
+                                <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFaq(index)}
+                              >
+                                <Trash className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
+                </TabsContent>
+                
+                <TabsContent value="seo" className="space-y-4">
+                  <FormSection>
+                    <FormSectionTitle>SEO Settings</FormSectionTitle>
+                    <FormField
+                      control={form.control}
+                      name="seoTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="SEO Title (usually including the name)" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Title tag for search engines. Keep it under 60 characters.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="seoDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Description</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Meta description for search results" {...field} rows={3} />
+                          </FormControl>
+                          <FormDescription>
+                            Meta description for search engines. Keep it under 160 characters.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="seoKeywords"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SEO Keywords</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Comma separated keywords" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Keywords for search engines (comma separated).
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormSection>
+                  
+                  <FormSection>
+                    <FormSectionTitle>Admin Settings</FormSectionTitle>
+                    <FormGrid columns={2}>
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="archived">Archived</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Controls visibility on the site
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="isFeatured"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>
+                                Featured Name
+                              </FormLabel>
+                              <FormDescription>
+                                Featured names appear highlighted on the homepage and other sections
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </FormGrid>
+                  </FormSection>
+                </TabsContent>
+              </Tabs>
+              
+              <DialogFooter>
+                <Button variant="outline" type="button" onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setIsCreateDialogOpen(false);
+                }}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {isEditDialogOpen ? "Update Name" : "Create Name"}
+                </Button>
+              </DialogFooter>
             </form>
           </Form>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Create Name Dialog */}
-      <AlertDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Create Name</AlertDialogTitle>
-            <AlertDialogDescription>
-              Create a new name in the database.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreateName)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="meaning"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meaning</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Meaning" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="boy">Boy</SelectItem>
-                        <SelectItem value="girl">Girl</SelectItem>
-                        <SelectItem value="unisex">Unisex</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="origin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Origin</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Origin" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="religion"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Religion</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Religion" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="language"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Language</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Language" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Create</Button>
-              </AlertDialogFooter>
-            </form>
-          </Form>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Name Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -874,12 +1445,12 @@ const ManageNames = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Name</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this name? This action cannot be undone.
+              Are you sure you want to delete "{selectedName?.name}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteName}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteName} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
