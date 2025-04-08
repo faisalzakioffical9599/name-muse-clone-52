@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash, Save, Languages, Book, Star, Palette, Diamond, Sun, Smile, Users, Mic, Tag, Info } from "lucide-react";
+import { Plus, Trash, Save, Languages, Book, Star, Palette, Diamond, Sun, Smile, Users, Mic, Tag, Info, Globe } from "lucide-react";
 
 import {
   Form,
@@ -121,32 +120,6 @@ interface NameFormProps {
 }
 
 const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps) => {
-  // State for array fields
-  const [translations, setTranslations] = useState<Translation[]>(
-    initialValues?.translations || [{ language: "", value: "" }]
-  );
-  const [meanings, setMeanings] = useState<Translation[]>(
-    initialValues?.meanings || [{ language: "", value: "" }]
-  );
-  const [descriptions, setDescriptions] = useState<string[]>(
-    initialValues?.descriptions || [""]
-  );
-  const [tags, setTags] = useState<string[]>(
-    initialValues?.tags || []
-  );
-  const [pronunciations, setPronunciations] = useState<PronunciationType[]>(
-    initialValues?.pronunciations || [{ language: "", value: "" }]
-  );
-  const [personalityTraits, setPersonalityTraits] = useState<PersonalityTrait[]>(
-    initialValues?.personalityTraits || [{ trait: "" }]
-  );
-  const [famousPeople, setFamousPeople] = useState<FamousPerson[]>(
-    initialValues?.famousPeople || [{ name: "", description: "" }]
-  );
-  const [faqs, setFaqs] = useState<NameFaq[]>(
-    initialValues?.nameFaqs || [{ question: "", answer: "" }]
-  );
-
   const { toast } = useToast();
   const [currentTag, setCurrentTag] = useState("");
 
@@ -187,7 +160,31 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
     },
   });
 
-  // Helper functions for array management
+  const [translations, setTranslations] = useState<Translation[]>(
+    initialValues?.translations || [{ language: "", value: "" }]
+  );
+  const [meanings, setMeanings] = useState<Translation[]>(
+    initialValues?.meanings || [{ language: "", value: "" }]
+  );
+  const [descriptions, setDescriptions] = useState<string[]>(
+    initialValues?.descriptions || [""]
+  );
+  const [tags, setTags] = useState<string[]>(
+    initialValues?.tags || []
+  );
+  const [pronunciations, setPronunciations] = useState<PronunciationType[]>(
+    initialValues?.pronunciations || [{ language: "", value: "" }]
+  );
+  const [personalityTraits, setPersonalityTraits] = useState<PersonalityTrait[]>(
+    initialValues?.personalityTraits || [{ trait: "" }]
+  );
+  const [famousPeople, setFamousPeople] = useState<FamousPerson[]>(
+    initialValues?.famousPeople || [{ name: "", description: "" }]
+  );
+  const [faqs, setFaqs] = useState<NameFaq[]>(
+    initialValues?.nameFaqs || [{ question: "", answer: "" }]
+  );
+
   const addTranslation = () => {
     setTranslations([...translations, { language: "", value: "" }]);
   };
@@ -343,7 +340,6 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
   };
 
   const handleSubmit = form.handleSubmit((values) => {
-    // Add all the array fields to the form data
     const formData = {
       ...values,
       translations,
