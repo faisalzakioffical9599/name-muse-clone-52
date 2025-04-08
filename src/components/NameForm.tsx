@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -31,7 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-// Define the types for the arrays
+// Define the types for the arrays with required properties (no optional properties)
 interface Translation {
   language: string;
   value: string;
@@ -162,29 +161,51 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
   });
 
   // Fixed initializations to ensure required properties are defined
+  // Making sure all required properties in the interface have non-optional initial values
   const [translations, setTranslations] = useState<Translation[]>(
-    initialValues?.translations || [{ language: "", value: "" }]
+    initialValues?.translations && initialValues.translations.length > 0 
+      ? initialValues.translations.map(t => ({ language: t.language || "", value: t.value || "" })) 
+      : [{ language: "", value: "" }]
   );
+  
   const [meanings, setMeanings] = useState<Translation[]>(
-    initialValues?.meanings || [{ language: "", value: "" }]
+    initialValues?.meanings && initialValues.meanings.length > 0 
+      ? initialValues.meanings.map(m => ({ language: m.language || "", value: m.value || "" })) 
+      : [{ language: "", value: "" }]
   );
+  
   const [descriptions, setDescriptions] = useState<string[]>(
-    initialValues?.descriptions || [""]
+    initialValues?.descriptions && initialValues.descriptions.length > 0
+      ? initialValues.descriptions
+      : [""]
   );
+  
   const [tags, setTags] = useState<string[]>(
     initialValues?.tags || []
   );
+  
   const [pronunciations, setPronunciations] = useState<PronunciationType[]>(
-    initialValues?.pronunciations || [{ language: "", value: "" }]
+    initialValues?.pronunciations && initialValues.pronunciations.length > 0
+      ? initialValues.pronunciations.map(p => ({ language: p.language || "", value: p.value || "" }))
+      : [{ language: "", value: "" }]
   );
+  
   const [personalityTraits, setPersonalityTraits] = useState<PersonalityTrait[]>(
-    initialValues?.personalityTraits || [{ trait: "" }]
+    initialValues?.personalityTraits && initialValues.personalityTraits.length > 0
+      ? initialValues.personalityTraits.map(p => ({ trait: p.trait || "" }))
+      : [{ trait: "" }]
   );
+  
   const [famousPeople, setFamousPeople] = useState<FamousPerson[]>(
-    initialValues?.famousPeople || [{ name: "", description: "" }]
+    initialValues?.famousPeople && initialValues.famousPeople.length > 0
+      ? initialValues.famousPeople.map(p => ({ name: p.name || "", description: p.description || "" }))
+      : [{ name: "", description: "" }]
   );
+  
   const [faqs, setFaqs] = useState<NameFaq[]>(
-    initialValues?.nameFaqs || [{ question: "", answer: "" }]
+    initialValues?.nameFaqs && initialValues.nameFaqs.length > 0
+      ? initialValues.nameFaqs.map(f => ({ question: f.question || "", answer: f.answer || "" }))
+      : [{ question: "", answer: "" }]
   );
 
   const addTranslation = () => {
@@ -361,6 +382,7 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
     });
   });
 
+  
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -1023,186 +1045,4 @@ const NameForm = ({ initialValues, onSubmit, isLoading = false }: NameFormProps)
             {famousPeople.map((person, index) => (
               <Card key={index} className="bg-muted/50 border-muted">
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-sm">Famous Person #{index + 1}</CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveFamousPerson(index)}
-                      disabled={famousPeople.length === 1}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-2">
-                      <label className="text-sm font-medium">Name</label>
-                      <Input
-                        placeholder="Famous person's full name (e.g., King Faisal of Saudi Arabia)"
-                        value={person.name}
-                        onChange={(e) =>
-                          handleFamousPersonChange(index, "name", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      <label className="text-sm font-medium">Description</label>
-                      <Textarea
-                        placeholder="Brief description (e.g., Former ruler of Saudi Arabia)"
-                        value={person.description}
-                        onChange={(e) =>
-                          handleFamousPersonChange(index, "description", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleAddFamousPerson}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Famous Person
-            </Button>
-          </div>
-        </FormSection>
-
-        {/* FAQs Section */}
-        <FormSection>
-          <FormSectionTitle className="flex items-center">
-            <Info className="mr-2 h-5 w-5" />
-            Name FAQs
-          </FormSectionTitle>
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="bg-muted/50 border-muted">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-sm">FAQ #{index + 1}</CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveFaq(index)}
-                      disabled={faqs.length === 1}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-2">
-                      <label className="text-sm font-medium">Question</label>
-                      <Input
-                        placeholder="FAQ question"
-                        value={faq.question}
-                        onChange={(e) =>
-                          handleFaqChange(index, "question", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      <label className="text-sm font-medium">Answer</label>
-                      <Textarea
-                        placeholder="FAQ answer"
-                        value={faq.answer}
-                        onChange={(e) =>
-                          handleFaqChange(index, "answer", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleAddFaq}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add FAQ
-            </Button>
-          </div>
-        </FormSection>
-
-        {/* SEO Section */}
-        <FormSection>
-          <FormSectionTitle>SEO Information</FormSectionTitle>
-          <FormField
-            control={form.control}
-            name="seoTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>SEO Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="SEO Title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="seoDescription"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>SEO Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Meta description for search engines"
-                    className="resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="seoKeywords"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>SEO Keywords</FormLabel>
-                <FormControl>
-                  <Input placeholder="Comma-separated keywords" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </FormSection>
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {initialValues ? "Update Name" : "Add Name"}
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-};
-
-export default NameForm;
+                  <div className="flex justify-between items
