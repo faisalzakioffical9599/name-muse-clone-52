@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import { Heart, Info, Globe, Church, Languages } from "lucide-react";
+import { Heart, Info, Globe, Church, Languages, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface NameCardProps {
   id: string | number;  // Changed to accept either string or number
@@ -12,6 +13,8 @@ interface NameCardProps {
   origin?: string;
   religion?: string;
   language?: string;
+  featured?: boolean;
+  trending?: boolean;
 }
 
 const NameCard = ({ 
@@ -22,7 +25,9 @@ const NameCard = ({
   popularity, 
   origin, 
   religion, 
-  language 
+  language,
+  featured = false,
+  trending = false
 }: NameCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -41,20 +46,47 @@ const NameCard = ({
 
   return (
     <div 
-      className={`relative rounded-xl overflow-hidden bg-white neo transition-all duration-300 ${
-        isHovered ? "translate-y-[-4px] shadow-lg" : ""
-      }`}
+      className={cn(
+        "relative rounded-xl overflow-hidden bg-white transition-all duration-300 border shadow-sm",
+        isHovered ? "translate-y-[-4px] shadow-md border-primary/20" : "border-gray-100",
+        featured ? "ring-2 ring-primary/30 ring-offset-2" : ""
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Featured Badge */}
+      {featured && (
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-primary text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <Star className="h-3 w-3 mr-1 fill-white" />
+            Featured
+          </span>
+        </div>
+      )}
+      
+      {/* Trending Badge */}
+      {trending && (
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <Star className="h-3 w-3 mr-1" />
+            Trending
+          </span>
+        </div>
+      )}
+
       {/* Favorite Button */}
       <button
-        onClick={() => setIsFavorited(!isFavorited)}
-        className={`absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center transition-colors duration-200 z-10 ${
+        onClick={(e) => {
+          e.preventDefault();
+          setIsFavorited(!isFavorited);
+        }}
+        className={cn(
+          "absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center transition-colors duration-200 z-10",
           isFavorited 
             ? "bg-red-50 text-red-500" 
             : "bg-gray-100 text-gray-400 hover:text-gray-500"
-        }`}
+        )}
+        aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
       >
         <Heart 
           size={16} 
@@ -64,7 +96,11 @@ const NameCard = ({
 
       <Link to={`/name/${id}`} className="block p-5">
         {/* Gender Badge */}
-        <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide mb-3 ${genderColors[gender]} ${genderTextColors[gender]}`}>
+        <div className={cn(
+          "inline-block px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide mb-3",
+          genderColors[gender],
+          genderTextColors[gender]
+        )}>
           {gender}
         </div>
         
@@ -104,9 +140,10 @@ const NameCard = ({
       
       {/* View Details Button */}
       <div 
-        className={`p-3 border-t border-gray-100 flex justify-center transition-opacity duration-300 ${
+        className={cn(
+          "p-3 border-t border-gray-100 flex justify-center transition-opacity duration-300",
           isHovered ? "opacity-100" : "opacity-70"
-        }`}
+        )}
       >
         <Link 
           to={`/name/${id}`}

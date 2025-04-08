@@ -1,890 +1,670 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Globe, Church, Languages, Plus, Trash2, Upload, Edit, Check, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { api } from "../services/api";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
+import { 
+  Plus, 
+  Pencil, 
+  Trash, 
+  Search, 
+  Save, 
+  X,
+  ArrowUpDown, 
+  Globe, 
+  Church, 
+  Languages 
+} from "lucide-react";
 
-// Define proper interfaces for our data types
-interface CountryType {
+// Form schema for adding/editing a regional category
+const categorySchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, { message: "Name is required" }),
+  type: z.enum(["country", "religion", "language"]),
+  count: z.number().int().positive().optional(),
+  description: z.string().optional(),
+});
+
+type CategoryFormValues = z.infer<typeof categorySchema>;
+
+interface Category {
   id: string;
   name: string;
-  count: number;
-  flag: string;
-  description: string;
-}
-
-interface ReligionType {
-  id: string;
-  name: string;
-  count: number;
-  description: string;
-}
-
-interface LanguageType {
-  id: string;
-  name: string;
-  count: number;
-  description: string;
+  type: "country" | "religion" | "language";
+  count?: number;
+  description?: string;
 }
 
 const RegionalCategories = () => {
+  const [activeTab, setActiveTab] = useState<string>("country");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
+    key: "name", 
+    direction: "asc" 
+  });
+  
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("countries");
-
-  // Pagination states
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(8);
-  const [loading, setLoading] = useState(false);
-  const [totalCountries, setTotalCountries] = useState(0);
-  const [totalReligions, setTotalReligions] = useState(0);
-  const [totalLanguages, setTotalLanguages] = useState(0);
-
-  // Search states
-  const [countrySearch, setCountrySearch] = useState("");
-  const [religionSearch, setReligionSearch] = useState("");
-  const [languageSearch, setLanguageSearch] = useState("");
-
-  // Categories states with proper typing
-  const [countries, setCountries] = useState<CountryType[]>([
-    { id: "india", name: "Indian", count: 1250, flag: "", description: "Names originating from India, reflecting its rich cultural and linguistic diversity." },
-    { id: "arabic", name: "Arabic", count: 980, flag: "", description: "Names with Arabic origins, often with deep meanings and historical significance." },
-    { id: "english", name: "English", count: 875, flag: "", description: "Traditional and modern English names with Anglo-Saxon, Norman, and Celtic influences." },
-    { id: "hebrew", name: "Hebrew", count: 740, flag: "", description: "Names of Hebrew origin, many with biblical significance and ancient roots." },
-    { id: "greek", name: "Greek", count: 650, flag: "", description: "Names derived from ancient Greek mythology, history, and culture." },
-    { id: "latin", name: "Latin", count: 590, flag: "", description: "Names with Latin origins, often reflecting Roman history and classical traditions." },
-    { id: "french", name: "French", count: 520, flag: "", description: "Elegant French names with distinctive pronunciation and cultural significance." },
-    { id: "irish", name: "Irish", count: 450, flag: "", description: "Traditional Irish names with Gaelic origins and Celtic heritage." },
-  ]);
+  const itemsPerPage = 10;
   
-  const [religions, setReligions] = useState<ReligionType[]>([
-    { id: "islam", name: "Islamic", count: 1450, description: "Names with Islamic significance, often derived from Arabic and with deep spiritual meanings." },
-    { id: "christianity", name: "Christian", count: 1320, description: "Names with Christian heritage, including biblical names and saints' names." },
-    { id: "hinduism", name: "Hindu", count: 980, description: "Names derived from Hindu deities, Sanskrit literature, and Indian traditions." },
-    { id: "judaism", name: "Jewish", count: 740, description: "Traditional Jewish names with Hebrew origins and cultural significance." },
-    { id: "buddhism", name: "Buddhist", count: 380, description: "Names inspired by Buddhist traditions, often reflecting virtues and enlightenment." },
-    { id: "sikhism", name: "Sikh", count: 290, description: "Names from Sikh traditions, often derived from Punjabi and Gurmukhi scripts." },
-  ]);
-  
-  const [languages, setLanguages] = useState<LanguageType[]>([
-    { id: "arabic", name: "Arabic", count: 1150, description: "One of the world's oldest languages with rich poetic traditions and beautiful script." },
-    { id: "english", name: "English", count: 1080, description: "A West Germanic language with global influence and extensive vocabulary." },
-    { id: "sanskrit", name: "Sanskrit", count: 920, description: "Ancient Indian language with profound literary and cultural heritage." },
-    { id: "hebrew", name: "Hebrew", count: 780, description: "Ancient Semitic language with a rich history and modern revival." },
-    { id: "greek", name: "Greek", count: 650, description: "One of the oldest Indo-European languages with extensive influence on Western culture." },
-    { id: "latin", name: "Latin", count: 580, description: "Classical language of ancient Rome that forms the basis of Romance languages." },
-    { id: "french", name: "French", count: 490, description: "Romance language known for its elegance and significant cultural impact." },
-    { id: "spanish", name: "Spanish", count: 430, description: "World's second-most spoken native language with rich literary traditions." },
-  ]);
-  
-  // New category form states with proper default values
-  const [newCountry, setNewCountry] = useState<CountryType>({ id: "", name: "", count: 0, flag: "", description: "" });
-  const [newReligion, setNewReligion] = useState<ReligionType>({ id: "", name: "", count: 0, description: "" });
-  const [newLanguage, setNewLanguage] = useState<LanguageType>({ id: "", name: "", count: 0, description: "" });
+  // Initialize form with default values or selected category data when editing
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      type: "country",
+      count: 0,
+      description: "",
+    },
+  });
 
-  // Edit States with proper typing
-  const [editingCountry, setEditingCountry] = useState<string | null>(null);
-  const [editingReligion, setEditingReligion] = useState<string | null>(null);
-  const [editingLanguage, setEditingLanguage] = useState<string | null>(null);
-  const [tempEditItem, setTempEditItem] = useState<CountryType | ReligionType | LanguageType>({ id: "", name: "", count: 0, description: "", flag: "" } as CountryType);
-
-  // Dialog States
-  const [showCountryDialog, setShowCountryDialog] = useState(false);
-  const [showReligionDialog, setShowReligionDialog] = useState(false);
-  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
-
-  // Fetch data from API when component mounts
+  // Sample data for demonstration - would be replaced by API call
   useEffect(() => {
-    fetchData();
-  }, [page, activeTab, countrySearch, religionSearch, languageSearch]);
+    const mockData: Category[] = [
+      // Countries
+      { id: "c1", name: "Indian", type: "country", count: 1250, description: "Names originating from India" },
+      { id: "c2", name: "Arabic", type: "country", count: 980, description: "Names with Arabic origins" },
+      { id: "c3", name: "English", type: "country", count: 875, description: "Traditional English names" },
+      { id: "c4", name: "Hebrew", type: "country", count: 740, description: "Names from Hebrew culture" },
+      { id: "c5", name: "Greek", type: "country", count: 650, description: "Names from Ancient and Modern Greece" },
+      { id: "c6", name: "Latin", type: "country", count: 590, description: "Names with Latin origins" },
+      { id: "c7", name: "French", type: "country", count: 520, description: "Names from France" },
+      { id: "c8", name: "Irish", type: "country", count: 450, description: "Traditional Irish names" },
+      { id: "c9", name: "German", type: "country", count: 430, description: "Names from Germany" },
+      { id: "c10", name: "Spanish", type: "country", count: 410, description: "Names from Spanish-speaking regions" },
+      { id: "c11", name: "Italian", type: "country", count: 390, description: "Names with Italian heritage" },
+      { id: "c12", name: "Nordic", type: "country", count: 340, description: "Names from Scandinavian countries" },
+      { id: "c13", name: "Russian", type: "country", count: 310, description: "Names from Russia" },
+      { id: "c14", name: "Japanese", type: "country", count: 290, description: "Names from Japan" },
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // In a real implementation, these would be API calls
-      // For now, we'll simulate the API responses
-      switch (activeTab) {
-        case "countries":
-          // Simulate API filtering and pagination
-          const filteredCountries = countries.filter(country => 
-            country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-            country.id.toLowerCase().includes(countrySearch.toLowerCase())
-          );
-          setTotalCountries(filteredCountries.length);
-          // Paginate results
-          const paginatedCountries = filteredCountries.slice((page - 1) * limit, page * limit);
-          setCountries(paginatedCountries);
-          break;
-        case "religions":
-          const filteredReligions = religions.filter(religion => 
-            religion.name.toLowerCase().includes(religionSearch.toLowerCase()) ||
-            religion.id.toLowerCase().includes(religionSearch.toLowerCase())
-          );
-          setTotalReligions(filteredReligions.length);
-          const paginatedReligions = filteredReligions.slice((page - 1) * limit, page * limit);
-          setReligions(paginatedReligions);
-          break;
-        case "languages":
-          const filteredLanguages = languages.filter(language => 
-            language.name.toLowerCase().includes(languageSearch.toLowerCase()) ||
-            language.id.toLowerCase().includes(languageSearch.toLowerCase())
-          );
-          setTotalLanguages(filteredLanguages.length);
-          const paginatedLanguages = filteredLanguages.slice((page - 1) * limit, page * limit);
-          setLanguages(paginatedLanguages);
-          break;
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch data",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Religions
+      { id: "r1", name: "Islamic", type: "religion", count: 1450, description: "Names associated with Islam" },
+      { id: "r2", name: "Christian", type: "religion", count: 1320, description: "Names from Christian traditions" },
+      { id: "r3", name: "Hindu", type: "religion", count: 980, description: "Names associated with Hinduism" },
+      { id: "r4", name: "Jewish", type: "religion", count: 740, description: "Names from Jewish traditions" },
+      { id: "r5", name: "Buddhist", type: "religion", count: 380, description: "Names associated with Buddhism" },
+      { id: "r6", name: "Sikh", type: "religion", count: 290, description: "Names from Sikh tradition" },
 
-  // Handle file uploads for flags - fix the type issue
-  const handleFlagUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload this to a server or storage
-      // For this demo, we'll just create a data URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (dialogMode === "add") {
-          setNewCountry({ ...newCountry, flag: reader.result as string });
-        } else if (dialogMode === "edit") {
-          setTempEditItem({ ...tempEditItem, flag: reader.result as string } as CountryType);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // CRUD functions for countries
-  const addCountry = async () => {
-    if (newCountry.id && newCountry.name) {
-      try {
-        // In a real app, this would be an API call
-        // const response = await api.countries.create(newCountry);
-        
-        setCountries([...countries, newCountry]);
-        setNewCountry({ id: "", name: "", count: 0, flag: "", description: "" });
-        setShowCountryDialog(false);
-        toast({
-          title: "Country Added",
-          description: `${newCountry.name} has been added to countries list.`,
-        });
-      } catch (error) {
-        console.error("Error adding country:", error);
-        toast({
-          title: "Error",
-          description: "Failed to add country",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-  
-  const editCountry = (country: CountryType) => {
-    setDialogMode("edit");
-    setTempEditItem({ ...country });
-    setEditingCountry(country.id);
-    setShowCountryDialog(true);
-  };
-  
-  const saveEditedCountry = async () => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.countries.update(editingCountry, tempEditItem);
-      
-      setCountries(
-        countries.map((country) => 
-          country.id === editingCountry ? tempEditItem as CountryType : country
-        )
-      );
-      setEditingCountry(null);
-      setTempEditItem({ id: "", name: "", count: 0, description: "", flag: "" } as CountryType);
-      setShowCountryDialog(false);
-      toast({
-        title: "Country Updated",
-        description: `Country has been updated successfully.`,
-      });
-    } catch (error) {
-      console.error("Error updating country:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update country",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const removeCountry = async (id: string) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.countries.delete(id);
-      
-      setCountries(countries.filter(item => item.id !== id));
-      toast({
-        title: "Country Removed",
-        description: `The country has been removed successfully.`,
-      });
-    } catch (error) {
-      console.error("Error removing country:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove country",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // CRUD functions for religions - similar to countries but with API integration
-  const addReligion = async () => {
-    if (newReligion.id && newReligion.name) {
-      try {
-        // In a real app, this would be an API call
-        // const response = await api.religions.create(newReligion);
-        
-        setReligions([...religions, newReligion]);
-        setNewReligion({ id: "", name: "", count: 0, description: "" });
-        setShowReligionDialog(false);
-        toast({
-          title: "Religion Added",
-          description: `${newReligion.name} has been added to religions list.`,
-        });
-      } catch (error) {
-        console.error("Error adding religion:", error);
-        toast({
-          title: "Error",
-          description: "Failed to add religion",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-  
-  const editReligion = (religion: ReligionType) => {
-    setDialogMode("edit");
-    setTempEditItem({ ...religion });
-    setEditingReligion(religion.id);
-    setShowReligionDialog(true);
-  };
-  
-  const saveEditedReligion = async () => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.religions.update(editingReligion, tempEditItem);
-      
-      setReligions(
-        religions.map((religion) => 
-          religion.id === editingReligion ? tempEditItem as ReligionType : religion
-        )
-      );
-      setEditingReligion(null);
-      setTempEditItem({ id: "", name: "", count: 0, description: "" } as ReligionType);
-      setShowReligionDialog(false);
-      toast({
-        title: "Religion Updated",
-        description: `Religion has been updated successfully.`,
-      });
-    } catch (error) {
-      console.error("Error updating religion:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update religion",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const removeReligion = async (id: string) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.religions.delete(id);
-      
-      setReligions(religions.filter(item => item.id !== id));
-      toast({
-        title: "Religion Removed",
-        description: `The religion has been removed successfully.`,
-      });
-    } catch (error) {
-      console.error("Error removing religion:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove religion",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // CRUD functions for languages - similar to the above but for languages
-  const addLanguage = async () => {
-    if (newLanguage.id && newLanguage.name) {
-      try {
-        // In a real app, this would be an API call
-        // const response = await api.languages.create(newLanguage);
-        
-        setLanguages([...languages, newLanguage]);
-        setNewLanguage({ id: "", name: "", count: 0, description: "" });
-        setShowLanguageDialog(false);
-        toast({
-          title: "Language Added",
-          description: `${newLanguage.name} has been added to languages list.`,
-        });
-      } catch (error) {
-        console.error("Error adding language:", error);
-        toast({
-          title: "Error",
-          description: "Failed to add language",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-  
-  const editLanguage = (language: LanguageType) => {
-    setDialogMode("edit");
-    setTempEditItem({ ...language });
-    setEditingLanguage(language.id);
-    setShowLanguageDialog(true);
-  };
-  
-  const saveEditedLanguage = async () => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.languages.update(editingLanguage, tempEditItem);
-      
-      setLanguages(
-        languages.map((language) => 
-          language.id === editingLanguage ? tempEditItem as LanguageType : language
-        )
-      );
-      setEditingLanguage(null);
-      setTempEditItem({ id: "", name: "", count: 0, description: "" } as LanguageType);
-      setShowLanguageDialog(false);
-      toast({
-        title: "Language Updated",
-        description: `Language has been updated successfully.`,
-      });
-    } catch (error) {
-      console.error("Error updating language:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update language",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const removeLanguage = async (id: string) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.languages.delete(id);
-      
-      setLanguages(languages.filter(item => item.id !== id));
-      toast({
-        title: "Language Removed",
-        description: `The language has been removed successfully.`,
-      });
-    } catch (error) {
-      console.error("Error removing language:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove language",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Open dialog functions
-  const openAddCountryDialog = () => {
-    setDialogMode("add");
-    setNewCountry({ id: "", name: "", count: 0, flag: "", description: "" });
-    setShowCountryDialog(true);
-  };
-  
-  const openAddReligionDialog = () => {
-    setDialogMode("add");
-    setNewReligion({ id: "", name: "", count: 0, description: "" });
-    setShowReligionDialog(true);
-  };
-  
-  const openAddLanguageDialog = () => {
-    setDialogMode("add");
-    setNewLanguage({ id: "", name: "", count: 0, description: "" });
-    setShowLanguageDialog(true);
-  };
-
-  // Handle page change
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  // Calculate total pages based on the active tab
-  const getTotalPages = () => {
-    switch (activeTab) {
-      case "countries":
-        return Math.ceil(totalCountries / limit);
-      case "religions":
-        return Math.ceil(totalReligions / limit);
-      case "languages":
-        return Math.ceil(totalLanguages / limit);
-      default:
-        return 1;
-    }
-  };
-
-  // Generate pagination items
-  const getPaginationItems = () => {
-    const totalPages = getTotalPages();
-    const items = [];
+      // Languages
+      { id: "l1", name: "Arabic", type: "language", count: 1150, description: "Names in the Arabic language" },
+      { id: "l2", name: "English", type: "language", count: 1080, description: "Names in the English language" },
+      { id: "l3", name: "Sanskrit", type: "language", count: 920, description: "Names from the Sanskrit language" },
+      { id: "l4", name: "Hebrew", type: "language", count: 780, description: "Names in the Hebrew language" },
+      { id: "l5", name: "Greek", type: "language", count: 650, description: "Names from the Greek language" },
+      { id: "l6", name: "Latin", type: "language", count: 580, description: "Names in Latin" },
+      { id: "l7", name: "French", type: "language", count: 490, description: "Names in the French language" },
+      { id: "l8", name: "Spanish", type: "language", count: 430, description: "Names in Spanish" },
+      { id: "l9", name: "German", type: "language", count: 410, description: "Names in German" },
+      { id: "l10", name: "Italian", type: "language", count: 380, description: "Names in Italian" },
+      { id: "l11", name: "Russian", type: "language", count: 340, description: "Names in Russian" },
+      { id: "l12", name: "Japanese", type: "language", count: 290, description: "Names in Japanese" },
+    ];
     
-    // Always show first page
-    items.push(
-      <PaginationItem key="first">
-        <PaginationLink onClick={() => handlePageChange(1)} isActive={page === 1}>
-          1
-        </PaginationLink>
-      </PaginationItem>
+    setCategories(mockData);
+  }, []);
+  
+  // Filter and paginate categories based on search term and active tab
+  useEffect(() => {
+    let filtered = categories.filter(cat => 
+      cat.type === activeTab && 
+      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    // Add ellipsis if needed
-    if (page > 3) {
-      items.push(
-        <PaginationItem key="ellipsis-start">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-    
-    // Show current page and neighbors
-    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
-      if (i === 1 || i === totalPages) continue; // Skip first and last page as they're always shown
-      items.push(
-        <PaginationItem key={i}>
-          <PaginationLink onClick={() => handlePageChange(i)} isActive={page === i}>
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    
-    // Add ellipsis if needed
-    if (page < totalPages - 2) {
-      items.push(
-        <PaginationItem key="ellipsis-end">
-          <PaginationEllipsis />
-        </PaginationItem>
-      );
-    }
-    
-    // Always show last page if there's more than one page
-    if (totalPages > 1) {
-      items.push(
-        <PaginationItem key="last">
-          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={page === totalPages}>
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    
-    return items;
-  };
-
-  // Import data functions
-  const importCountries = (data: CountryType[]) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.countries.importBulk(data);
+    // Sort the filtered data
+    filtered = [...filtered].sort((a, b) => {
+      const aValue = a[sortConfig.key as keyof Category];
+      const bValue = b[sortConfig.key as keyof Category];
       
-      setCountries([...countries, ...data]);
-      toast({
-        title: "Countries Imported",
-        description: `${data.length} countries have been imported successfully.`,
-      });
-    } catch (error) {
-      console.error("Error importing countries:", error);
-      toast({
-        title: "Error",
-        description: "Failed to import countries",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const importReligions = (data: ReligionType[]) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.religions.importBulk(data);
+      if (aValue === undefined || bValue === undefined) return 0;
       
-      setReligions([...religions, ...data]);
-      toast({
-        title: "Religions Imported",
-        description: `${data.length} religions have been imported successfully.`,
-      });
-    } catch (error) {
-      console.error("Error importing religions:", error);
-      toast({
-        title: "Error",
-        description: "Failed to import religions",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const importLanguages = (data: LanguageType[]) => {
-    try {
-      // In a real app, this would be an API call
-      // const response = await api.languages.importBulk(data);
-      
-      setLanguages([...languages, ...data]);
-      toast({
-        title: "Languages Imported",
-        description: `${data.length} languages have been imported successfully.`,
-      });
-    } catch (error) {
-      console.error("Error importing languages:", error);
-      toast({
-        title: "Error",
-        description: "Failed to import languages",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // File import handler for JSON
-  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
-    
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    
-    reader.onload = (event) => {
-      if (event.target && typeof event.target.result === 'string') {
-        try {
-          const data = JSON.parse(event.target.result);
-          
-          if (Array.isArray(data)) {
-            switch (activeTab) {
-              case "countries":
-                importCountries(data as CountryType[]);
-                break;
-              case "religions":
-                importReligions(data as ReligionType[]);
-                break;
-              case "languages":
-                importLanguages(data as LanguageType[]);
-                break;
-            }
-          } else {
-            toast({
-              title: "Invalid Format",
-              description: "The imported file must contain an array of items.",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          toast({
-            title: "Invalid JSON",
-            description: "The file could not be parsed as JSON.",
-            variant: "destructive"
-          });
-        }
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
-    };
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+      
+      return 0;
+    });
     
-    reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    setFilteredCategories(filtered);
+    setCurrentPage(1);
+  }, [categories, activeTab, searchTerm, sortConfig]);
+
+  // Get current page categories
+  const getCurrentPageCategories = () => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredCategories.slice(indexOfFirstItem, indexOfLastItem);
+  };
+
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  
+  // Request sort by specific key
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Edit category handler
+  const handleEdit = (category: Category) => {
+    setSelectedCategory(category);
+    form.reset({
+      id: category.id,
+      name: category.name,
+      type: category.type,
+      count: category.count,
+      description: category.description || "",
+    });
+    setIsEditing(true);
+  };
+  
+  // Delete category handler
+  const handleDelete = (id: string) => {
+    // In a real app, would call API to delete the category
+    setCategories(prevCategories => 
+      prevCategories.filter(category => category.id !== id)
+    );
+    
+    toast({
+      title: "Category Deleted",
+      description: "The category has been successfully deleted.",
+    });
+  };
+  
+  // Form submit handler
+  const onSubmit = async (data: CategoryFormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (isEditing && selectedCategory) {
+        // Update existing category
+        setCategories(prevCategories =>
+          prevCategories.map(category =>
+            category.id === selectedCategory.id
+              ? { ...data, id: selectedCategory.id } as Category
+              : category
+          )
+        );
+        
+        toast({
+          title: "Category Updated",
+          description: "The category has been successfully updated.",
+        });
+      } else {
+        // Add new category
+        const newCategory: Category = {
+          ...data,
+          id: `${data.type[0]}${categories.length + 1}`, // Generate a simple ID
+          count: data.count || 0,
+        };
+        
+        setCategories(prevCategories => [...prevCategories, newCategory]);
+        
+        toast({
+          title: "Category Added",
+          description: "The new category has been successfully added.",
+        });
+      }
+      
+      // Reset form and state
+      resetForm();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save the category. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const resetForm = () => {
+    form.reset({
+      name: "",
+      type: activeTab as "country" | "religion" | "language",
+      count: 0,
+      description: "",
+    });
+    setIsEditing(false);
+    setSelectedCategory(null);
+  };
+  
+  // Get tab icon based on type
+  const getTabIcon = (type: string) => {
+    switch(type) {
+      case "country":
+        return <Globe className="h-4 w-4 mr-2" />;
+      case "religion":
+        return <Church className="h-4 w-4 mr-2" />;
+      case "language":
+        return <Languages className="h-4 w-4 mr-2" />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Regional Categories</h1>
-      
-      <Tabs value={activeTab} onValueChange={(value) => { setActiveTab(value); setPage(1); }} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="countries" className="flex items-center">
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">Regional Categories</h1>
+      <p className="text-muted-foreground">
+        Manage country origins, religions, and languages for categorizing names.
+      </p>
+
+      <Tabs 
+        defaultValue="country" 
+        value={activeTab}
+        onValueChange={(value) => {
+          setActiveTab(value);
+          resetForm();
+        }}
+        className="space-y-6"
+      >
+        <TabsList>
+          <TabsTrigger value="country" className="flex items-center">
             <Globe className="h-4 w-4 mr-2" />
             Countries
           </TabsTrigger>
-          <TabsTrigger value="religions" className="flex items-center">
+          <TabsTrigger value="religion" className="flex items-center">
             <Church className="h-4 w-4 mr-2" />
             Religions
           </TabsTrigger>
-          <TabsTrigger value="languages" className="flex items-center">
+          <TabsTrigger value="language" className="flex items-center">
             <Languages className="h-4 w-4 mr-2" />
             Languages
           </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="countries">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Countries</CardTitle>
-                <CardDescription>
-                  Manage countries for name origins
-                </CardDescription>
+
+        {/* Shared content for each tab */}
+        {["country", "religion", "language"].map((tabValue) => (
+          <TabsContent key={tabValue} value={tabValue} className="space-y-6">
+            {/* Search and Add Section */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search..." 
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={openAddCountryDialog}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Country
-                </Button>
-                <label htmlFor="import-countries">
-                  <Button variant="outline" asChild>
-                    <div>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import
-                      <input
-                        id="import-countries"
-                        type="file"
-                        accept=".json"
-                        onChange={handleFileImport}
-                        className="hidden"
-                      />
-                    </div>
-                  </Button>
-                </label>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search countries..."
-                    className="pl-8"
-                    value={countrySearch}
-                    onChange={(e) => {
-                      setCountrySearch(e.target.value);
-                      setPage(1); // Reset to first page on search
-                    }}
-                  />
-                </div>
-              </div>
-              
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {countries.length === 0 ? (
-                      <p className="col-span-2 text-center py-8 text-muted-foreground">No countries found. Try a different search or add a new country.</p>
-                    ) : (
-                      countries.map((country) => (
-                        <div key={country.id} className="flex items-center p-3 bg-gray-50 rounded-md">
-                          {country.flag && (
-                            <div className="w-12 h-8 mr-3 overflow-hidden rounded border">
-                              <img 
-                                src={country.flag} 
-                                alt={`${country.name} flag`} 
-                                className="w-full h-full object-cover" 
-                              />
+              <Button 
+                onClick={() => {
+                  resetForm();
+                  form.setValue("type", tabValue as "country" | "religion" | "language");
+                }}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add {tabValue.charAt(0).toUpperCase() + tabValue.slice(1)}
+              </Button>
+            </div>
+            
+            {/* Categories List Table */}
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead onClick={() => requestSort('name')} className="cursor-pointer w-1/3">
+                        <div className="flex items-center">
+                          Name
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </div>
+                      </TableHead>
+                      <TableHead onClick={() => requestSort('count')} className="cursor-pointer">
+                        <div className="flex items-center">
+                          Count
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </div>
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">Description</TableHead>
+                      <TableHead className="w-24">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getCurrentPageCategories().length > 0 ? (
+                      getCurrentPageCategories().map((category) => (
+                        <TableRow key={category.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {getTabIcon(category.type)}
+                              {category.name}
                             </div>
-                          )}
-                          <div className="flex-1">
-                            <p className="font-medium">{country.name}</p>
-                            <p className="text-sm text-muted-foreground">ID: {country.id} | Names: {country.count}</p>
-                            {country.description && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{country.description}</p>
-                            )}
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => editCountry(country)}
-                            >
-                              <Edit className="h-4 w-4 text-blue-500" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeCountry(country.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </div>
+                          </TableCell>
+                          <TableCell>{category.count || 0}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {category.description || "No description"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(category)}
+                                title="Edit"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-destructive"
+                                    title="Delete"
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{category.name}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(category.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))
-                    )}
-                  </div>
-                  
-                  {/* Pagination */}
-                  {getTotalPages() > 1 && (
-                    <div className="mt-4">
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious 
-                              onClick={() => handlePageChange(page - 1)} 
-                              disabled={page === 1} 
-                            />
-                          </PaginationItem>
-                          
-                          {getPaginationItems()}
-                          
-                          <PaginationItem>
-                            <PaginationNext 
-                              onClick={() => handlePageChange(page + 1)} 
-                              disabled={page === getTotalPages()} 
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="religions">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Religions</CardTitle>
-                <CardDescription>
-                  Manage religious categories for names
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={openAddReligionDialog}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Religion
-                </Button>
-                <label htmlFor="import-religions">
-                  <Button variant="outline" asChild>
-                    <div>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import
-                      <input
-                        id="import-religions"
-                        type="file"
-                        accept=".json"
-                        onChange={handleFileImport}
-                        className="hidden"
-                      />
-                    </div>
-                  </Button>
-                </label>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search religions..."
-                    className="pl-8"
-                    value={religionSearch}
-                    onChange={(e) => {
-                      setReligionSearch(e.target.value);
-                      setPage(1); // Reset to first page on search
-                    }}
-                  />
-                </div>
-              </div>
-              
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {religions.length === 0 ? (
-                      <p className="col-span-2 text-center py-8 text-muted-foreground">No religions found. Try a different search or add a new religion.</p>
                     ) : (
-                      religions.map((religion) => (
-                        <div key={religion.id} className="flex items-center p-3 bg-gray-50 rounded-md">
-                          <div className="flex-1">
-                            <p className="font-medium">{religion.name}</p>
-                            <p className="text-sm text-muted-foreground">ID: {religion.id} | Names: {religion.count}</p>
-                            {religion.description && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{religion.description}</p>
-                            )}
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => editReligion(religion)}
-                            >
-                              <Edit className="h-4 w-4 text-blue-500" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeReligion(religion.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8">
+                          {searchTerm 
+                            ? `No ${activeTab} categories found matching "${searchTerm}"` 
+                            : `No ${activeTab} categories found`}
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </div>
-                  
-                  {/* Pagination */}
-                  {getTotalPages() > 1 && (
-                    <div className="mt-4">
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious 
-                              onClick={() => handlePageChange(page - 1)} 
-                              disabled={page === 1} 
-                            />
-                          </PaginationItem>
-                          
-                          {getPaginationItems()}
-                          
-                          <PaginationItem>
-                            <PaginationNext 
-                              onClick={() => handlePageChange(page + 1)} 
-                              disabled={page === getTotalPages()} 
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
-                  )}
-                </>
+                  </TableBody>
+                </Table>
+              </CardContent>
+              
+              {/* Pagination */}
+              {filteredCategories.length > itemsPerPage && (
+                <CardFooter className="border-t py-4">
+                  <Pagination className="mx-auto">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      
+                      {currentPage > 1 && (
+                        <PaginationItem>
+                          <PaginationLink onClick={() => setCurrentPage(1)}>
+                            1
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+                      
+                      {currentPage > 2 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      
+                      <PaginationItem>
+                        <PaginationLink isActive>{currentPage}</PaginationLink>
+                      </PaginationItem>
+                      
+                      {currentPage < totalPages - 1 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      
+                      {currentPage < totalPages && (
+                        <PaginationItem>
+                          <PaginationLink onClick={() => setCurrentPage(totalPages)}>
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+                      
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardFooter>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="languages">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Languages</CardTitle>
-                <CardDescription>
-                  Manage languages associated with names
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={openAddLanguageDialog}>
-                  <Plus
+            </Card>
+
+            {/* Category Form */}
+            {(isEditing || (!isEditing && form.getValues().name)) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {isEditing ? `Edit ${selectedCategory?.name}` : `Add New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
+                  </CardTitle>
+                  <CardDescription>
+                    {isEditing 
+                      ? `Update details for this ${activeTab} category.` 
+                      : `Create a new ${activeTab} category for name classification.`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder={`Enter ${activeTab} name`} {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              The display name for this {activeTab} category.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              disabled={isEditing}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="country">Country</SelectItem>
+                                <SelectItem value="religion">Religion</SelectItem>
+                                <SelectItem value="language">Language</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Category type determines where this will appear on the site.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="count"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name Count</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Number of names in this category (optional).
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Brief description of this category"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Short description for admin reference (optional).
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="flex justify-end space-x-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={resetForm}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? (
+                            <>
+                              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="mr-2 h-4 w-4" />
+                              {isEditing ? "Update" : "Save"}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  );
+};
+
+export default RegionalCategories;
