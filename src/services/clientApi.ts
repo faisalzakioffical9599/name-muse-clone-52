@@ -1,8 +1,12 @@
-
-
-import { api as adminApi } from '../admin/services/api';
-import { Name, Category, ContentPage, Faq, NameWithDetails, Favorite } from '../types/supabaseTypes';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  Name, 
+  Category, 
+  ContentPage, 
+  Faq, 
+  NameWithDetails, 
+  Favorite 
+} from '../types/supabaseTypes';
 
 // Define a type for category parameters
 interface CategoryParams {
@@ -70,8 +74,8 @@ export const clientApi = {
           query = query.order(field, { ascending: order !== 'desc' });
         }
         
-        // Execute query
-        const { data, error, count } = await query.select('*', { count: 'exact' });
+        // Execute query with properly handled parameters
+        const { data, error, count } = await query;
         
         if (error) throw error;
         
@@ -628,4 +632,3 @@ export const clientApi = {
 };
 
 export default clientApi;
-
