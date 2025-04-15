@@ -1,4 +1,7 @@
+
 import { api as adminApi } from '../admin/services/api';
+import { Name, Category, ContentPage, Faq, NameWithDetails, Favorite } from '../types/supabaseTypes';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define a type for category parameters
 interface CategoryParams {
@@ -6,6 +9,19 @@ interface CategoryParams {
   religion?: string;
   language?: string;
   [key: string]: any;
+}
+
+// Define response type
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 /**
@@ -16,43 +32,164 @@ export const clientApi = {
   // Names related endpoints
   names: {
     // Get all names with filtering and pagination
-    getAllNames: async (params = {}) => {
-      return adminApi.names.getAll(params);
+    getAllNames: async (params = {}): Promise<ApiResponse<Name[]>> => {
+      try {
+        let query = supabase.from('names').select('*');
+        
+        // Apply filters
+        if (params.gender) query = query.eq('gender', params.gender);
+        if (params.origin) query = query.eq('origin', params.origin);
+        if (params.religion) query = query.eq('religion', params.religion);
+        if (params.language) query = query.eq('language', params.language);
+        if (params.search) query = query.ilike('name', `%${params.search}%`);
+        
+        // Apply pagination
+        const page = Number(params.page) || 1;
+        const limit = Number(params.limit) || 10;
+        const start = (page - 1) * limit;
+        query = query.range(start, start + limit - 1);
+        
+        // Apply sorting
+        if (params.sortBy) {
+          const [field, order] = params.sortBy.split('-');
+          query = query.order(field, { ascending: order !== 'desc' });
+        }
+        
+        // Execute query
+        const { data, error, count } = await query.select('*', { count: 'exact' });
+        
+        if (error) throw error;
+        
+        const total = count || 0;
+        const totalPages = Math.ceil(total / limit);
+        
+        return {
+          success: true,
+          data,
+          meta: {
+            total,
+            page,
+            limit,
+            totalPages
+          }
+        };
+      } catch (error) {
+        console.error("Error getting names:", error);
+        return {
+          success: false,
+          message: "Failed to fetch names",
+          data: [],
+          meta: {
+            total: 0,
+            page: 1,
+            limit: 10,
+            totalPages: 0
+          }
+        };
+      }
     },
     
     // Get a single name by ID
-    getNameById: async (id) => {
-      return adminApi.names.getById(id);
+    getNameById: async (id: string): Promise<ApiResponse<NameWithDetails>> => {
+      try {
+        // Get the main name data
+        const { data: nameData, error: nameError } = await supabase
+          .from('names')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (nameError) throw nameError;
+        
+        // Get additional details
+        const { data: additionalDetails, error: detailsError } = await supabase
+          .from('name_additional_details')
+          .select('*')
+          .eq('name_id', id)
+          .maybeSingle();
+        
+        // Get variations
+        const { data: variations, error: variationsError } = await supabase
+          .from('name_variations')
+          .select('*')
+          .eq('name_id', id);
+        
+        // Get personality traits
+        const { data: personalityTraits, error: traitsError } = await supabase
+          .from('name_personality_traits')
+          .select('*')
+          .eq('name_id', id);
+        
+        // Get famous people
+        const { data: famousPeople, error: peopleError } = await supabase
+          .from('name_famous_people')
+          .select('*')
+          .eq('name_id', id);
+        
+        // Get FAQs
+        const { data: faqs, error: faqsError } = await supabase
+          .from('name_faqs')
+          .select('*')
+          .eq('name_id', id);
+        
+        // Get SEO
+        const { data: seo, error: seoError } = await supabase
+          .from('name_seo')
+          .select('*')
+          .eq('name_id', id)
+          .maybeSingle();
+        
+        const nameWithDetails: NameWithDetails = {
+          ...nameData,
+          additionalDetails: additionalDetails || null,
+          variations: variations || [],
+          personalityTraits: personalityTraits || [],
+          famousPeople: famousPeople || [],
+          faqs: faqs || [],
+          seo: seo || null
+        };
+        
+        return {
+          success: true,
+          data: nameWithDetails
+        };
+      } catch (error) {
+        console.error("Error getting name by ID:", error);
+        return {
+          success: false,
+          message: "Failed to fetch name details"
+        };
+      }
     },
     
     // Get boy names
     getBoyNames: async (params = {}) => {
-      return adminApi.names.getAll({ ...params, gender: 'boy' });
+      return clientApi.names.getAllNames({ ...params, gender: 'boy' });
     },
     
     // Get girl names
     getGirlNames: async (params = {}) => {
-      return adminApi.names.getAll({ ...params, gender: 'girl' });
+      return clientApi.names.getAllNames({ ...params, gender: 'girl' });
     },
     
     // Get unisex names
     getUnisexNames: async (params = {}) => {
-      return adminApi.names.getAll({ ...params, gender: 'unisex' });
+      return clientApi.names.getAllNames({ ...params, gender: 'unisex' });
     },
     
     // Get names by category (origin, religion, language)
-    getNamesByCategory: async (categoryType, categoryId, params = {}) => {
+    getNamesByCategory: async (categoryType: string, categoryId: string, params = {}) => {
       const filter: CategoryParams = {};
       if (categoryType === 'country') filter.origin = categoryId;
       if (categoryType === 'religion') filter.religion = categoryId;
       if (categoryType === 'language') filter.language = categoryId;
       
-      return adminApi.names.getAll({ ...params, ...filter });
+      return clientApi.names.getAllNames({ ...params, ...filter });
     },
     
     // Get trending names
     getTrendingNames: async (limit = 10) => {
-      return adminApi.names.getAll({ 
+      return clientApi.names.getAllNames({ 
         sortBy: 'popularity-desc',
         limit
       });
@@ -61,77 +198,268 @@ export const clientApi = {
     // Get unique names
     getUniqueNames: async (params = {}) => {
       // This would have more complex logic in a real API
-      return adminApi.names.getAll(params);
+      return clientApi.names.getAllNames(params);
     }
   },
   
   // Categories related endpoints
   categories: {
     // Get all categories
-    getAllCategories: async () => {
-      return adminApi.categories.getAll();
+    getAllCategories: async (): Promise<ApiResponse<Category[]>> => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*');
+        
+        if (error) throw error;
+        
+        return {
+          success: true,
+          data
+        };
+      } catch (error) {
+        console.error("Error getting categories:", error);
+        return {
+          success: false,
+          message: "Failed to fetch categories",
+          data: []
+        };
+      }
     },
     
     // Get categories by type
-    getCategoriesByType: async (type) => {
-      return adminApi.categories.getAll({ type });
+    getCategoriesByType: async (type: string): Promise<ApiResponse<Category[]>> => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('type', type);
+        
+        if (error) throw error;
+        
+        return {
+          success: true,
+          data
+        };
+      } catch (error) {
+        console.error("Error getting categories by type:", error);
+        return {
+          success: false,
+          message: "Failed to fetch categories",
+          data: []
+        };
+      }
     }
   },
   
   // Content related endpoints
   content: {
     // Get page content by slug
-    getPageContent: async (slug) => {
-      return adminApi.pageContent.getBySlug(slug);
+    getPageContent: async (slug: string): Promise<ApiResponse<ContentPage>> => {
+      try {
+        const { data, error } = await supabase
+          .from('content_pages')
+          .select('*')
+          .eq('slug', slug)
+          .maybeSingle();
+        
+        if (error) throw error;
+        
+        if (!data) {
+          return {
+            success: false,
+            message: "Page not found"
+          };
+        }
+        
+        return {
+          success: true,
+          data
+        };
+      } catch (error) {
+        console.error("Error getting page content:", error);
+        return {
+          success: false,
+          message: "Failed to fetch page content"
+        };
+      }
     },
     
     // Get all FAQs
-    getFAQs: async (params = {}) => {
-      return adminApi.faqs.getAll(params);
+    getFAQs: async (params = {}): Promise<ApiResponse<Faq[]>> => {
+      try {
+        let query = supabase.from('faqs').select('*');
+        
+        if (params.category) query = query.eq('category', params.category);
+        
+        const { data, error } = await query.order('priority', { ascending: false });
+        
+        if (error) throw error;
+        
+        return {
+          success: true,
+          data
+        };
+      } catch (error) {
+        console.error("Error getting FAQs:", error);
+        return {
+          success: false,
+          message: "Failed to fetch FAQs",
+          data: []
+        };
+      }
     }
   },
   
   // User related endpoints (for frontend users, not admin users)
   user: {
     // Add name to favorites
-    addFavorite: async (nameId) => {
-      // In a real API, this would be tied to the user's account
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      if (!favorites.includes(nameId)) {
-        favorites.push(nameId);
-        localStorage.setItem('favorites', JSON.stringify(favorites));
+    addFavorite: async (nameId: string): Promise<ApiResponse<Favorite>> => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          return {
+            success: false,
+            message: "You must be logged in to add favorites"
+          };
+        }
+        
+        const userId = session.session.user.id;
+        
+        const { data, error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: userId, name_id: nameId }])
+          .select()
+          .single();
+        
+        if (error) {
+          // Check if it's a unique constraint error (already a favorite)
+          if (error.code === '23505') {
+            return {
+              success: true,
+              message: "Name is already in favorites"
+            };
+          }
+          throw error;
+        }
+        
+        return {
+          success: true,
+          data,
+          message: "Name added to favorites"
+        };
+      } catch (error) {
+        console.error("Error adding favorite:", error);
+        return {
+          success: false,
+          message: "Failed to add to favorites"
+        };
       }
-      return { success: true, message: 'Name added to favorites' };
     },
     
     // Remove name from favorites
-    removeFavorite: async (nameId) => {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      const updated = favorites.filter(id => id !== nameId);
-      localStorage.setItem('favorites', JSON.stringify(updated));
-      return { success: true, message: 'Name removed from favorites' };
+    removeFavorite: async (nameId: string): Promise<ApiResponse<void>> => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          return {
+            success: false,
+            message: "You must be logged in to remove favorites"
+          };
+        }
+        
+        const userId = session.session.user.id;
+        
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('name_id', nameId);
+        
+        if (error) throw error;
+        
+        return {
+          success: true,
+          message: "Name removed from favorites"
+        };
+      } catch (error) {
+        console.error("Error removing favorite:", error);
+        return {
+          success: false,
+          message: "Failed to remove from favorites"
+        };
+      }
     },
     
     // Get all favorites
-    getFavorites: async () => {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      const promises = favorites.map(id => adminApi.names.getById(id));
+    getFavorites: async (): Promise<ApiResponse<Name[]>> => {
       try {
-        const results = await Promise.all(promises);
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          return {
+            success: false,
+            message: "You must be logged in to view favorites",
+            data: [],
+            meta: {
+              total: 0,
+              page: 1,
+              limit: 0,
+              totalPages: 0
+            }
+          };
+        }
+        
+        const userId = session.session.user.id;
+        
+        // First get all favorites for the user
+        const { data: favorites, error: favoritesError } = await supabase
+          .from('favorites')
+          .select('name_id')
+          .eq('user_id', userId);
+        
+        if (favoritesError) throw favoritesError;
+        
+        if (!favorites || favorites.length === 0) {
+          return { 
+            success: true, 
+            data: [],
+            meta: {
+              total: 0,
+              page: 1,
+              limit: 0,
+              totalPages: 0
+            }
+          };
+        }
+        
+        // Get all names that match the favorite IDs
+        const nameIds = favorites.map(fav => fav.name_id);
+        
+        const { data: names, error: namesError } = await supabase
+          .from('names')
+          .select('*')
+          .in('id', nameIds);
+        
+        if (namesError) throw namesError;
+        
         return { 
           success: true, 
-          data: results.map(r => r.data),
+          data: names,
           meta: {
-            total: results.length,
+            total: names.length,
             page: 1,
-            limit: results.length,
+            limit: names.length,
             totalPages: 1
           }
         };
       } catch (error) {
-        console.error('Error fetching favorites:', error);
+        console.error("Error fetching favorites:", error);
         return { 
-          success: true, 
+          success: false,
+          message: "Failed to fetch favorites", 
           data: [],
           meta: {
             total: 0,
@@ -147,7 +475,7 @@ export const clientApi = {
   // Utility endpoints
   utils: {
     // Generate name combinations
-    generateNameCombinations: async (firstName, secondName) => {
+    generateNameCombinations: async (firstName: string, secondName: string) => {
       // Simple name combination logic
       if (!firstName || !secondName) {
         return { success: false, message: "Both names are required" };
@@ -190,7 +518,7 @@ export const clientApi = {
     },
     
     // Check name compatibility
-    checkNameCompatibility: async (firstName, secondName) => {
+    checkNameCompatibility: async (firstName: string, secondName: string) => {
       if (!firstName || !secondName) {
         return { success: false, message: "Both names are required" };
       }
