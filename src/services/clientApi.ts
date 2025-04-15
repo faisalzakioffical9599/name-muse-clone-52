@@ -1,4 +1,5 @@
 
+
 import { api as adminApi } from '../admin/services/api';
 import { Name, Category, ContentPage, Faq, NameWithDetails, Favorite } from '../types/supabaseTypes';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +25,20 @@ interface ApiResponse<T> {
   };
 }
 
+// Define parameters interface for queries
+interface QueryParams {
+  page?: number;
+  limit?: number;
+  gender?: string;
+  origin?: string;
+  religion?: string;
+  language?: string;
+  search?: string;
+  sortBy?: string;
+  category?: string;
+  [key: string]: any;
+}
+
 /**
  * Client-side API wrapper for the website's frontend
  * This can be easily replaced with real API endpoints later
@@ -32,7 +47,7 @@ export const clientApi = {
   // Names related endpoints
   names: {
     // Get all names with filtering and pagination
-    getAllNames: async (params = {}): Promise<ApiResponse<Name[]>> => {
+    getAllNames: async (params: QueryParams = {}): Promise<ApiResponse<Name[]>> => {
       try {
         let query = supabase.from('names').select('*');
         
@@ -63,9 +78,15 @@ export const clientApi = {
         const total = count || 0;
         const totalPages = Math.ceil(total / limit);
         
+        // Ensure we cast the gender field to the correct type
+        const typedData = data?.map(item => ({
+          ...item,
+          gender: item.gender as "boy" | "girl" | "unisex"
+        })) as Name[];
+        
         return {
           success: true,
-          data,
+          data: typedData,
           meta: {
             total,
             page,
@@ -100,6 +121,12 @@ export const clientApi = {
           .single();
         
         if (nameError) throw nameError;
+        
+        // Cast gender to the correct type
+        const typedNameData = {
+          ...nameData,
+          gender: nameData.gender as "boy" | "girl" | "unisex"
+        } as Name;
         
         // Get additional details
         const { data: additionalDetails, error: detailsError } = await supabase
@@ -140,7 +167,7 @@ export const clientApi = {
           .maybeSingle();
         
         const nameWithDetails: NameWithDetails = {
-          ...nameData,
+          ...typedNameData,
           additionalDetails: additionalDetails || null,
           variations: variations || [],
           personalityTraits: personalityTraits || [],
@@ -163,22 +190,22 @@ export const clientApi = {
     },
     
     // Get boy names
-    getBoyNames: async (params = {}) => {
+    getBoyNames: async (params: QueryParams = {}) => {
       return clientApi.names.getAllNames({ ...params, gender: 'boy' });
     },
     
     // Get girl names
-    getGirlNames: async (params = {}) => {
+    getGirlNames: async (params: QueryParams = {}) => {
       return clientApi.names.getAllNames({ ...params, gender: 'girl' });
     },
     
     // Get unisex names
-    getUnisexNames: async (params = {}) => {
+    getUnisexNames: async (params: QueryParams = {}) => {
       return clientApi.names.getAllNames({ ...params, gender: 'unisex' });
     },
     
     // Get names by category (origin, religion, language)
-    getNamesByCategory: async (categoryType: string, categoryId: string, params = {}) => {
+    getNamesByCategory: async (categoryType: string, categoryId: string, params: QueryParams = {}) => {
       const filter: CategoryParams = {};
       if (categoryType === 'country') filter.origin = categoryId;
       if (categoryType === 'religion') filter.religion = categoryId;
@@ -196,7 +223,7 @@ export const clientApi = {
     },
     
     // Get unique names
-    getUniqueNames: async (params = {}) => {
+    getUniqueNames: async (params: QueryParams = {}) => {
       // This would have more complex logic in a real API
       return clientApi.names.getAllNames(params);
     }
@@ -213,9 +240,15 @@ export const clientApi = {
         
         if (error) throw error;
         
+        // Ensure we cast the type field to the correct type
+        const typedData = data?.map(item => ({
+          ...item,
+          type: item.type as "country" | "religion" | "language"
+        })) as Category[];
+        
         return {
           success: true,
-          data
+          data: typedData
         };
       } catch (error) {
         console.error("Error getting categories:", error);
@@ -237,9 +270,15 @@ export const clientApi = {
         
         if (error) throw error;
         
+        // Ensure we cast the type field to the correct type
+        const typedData = data?.map(item => ({
+          ...item,
+          type: item.type as "country" | "religion" | "language"
+        })) as Category[];
+        
         return {
           success: true,
-          data
+          data: typedData
         };
       } catch (error) {
         console.error("Error getting categories by type:", error);
@@ -274,7 +313,7 @@ export const clientApi = {
         
         return {
           success: true,
-          data
+          data: data as ContentPage
         };
       } catch (error) {
         console.error("Error getting page content:", error);
@@ -286,7 +325,7 @@ export const clientApi = {
     },
     
     // Get all FAQs
-    getFAQs: async (params = {}): Promise<ApiResponse<Faq[]>> => {
+    getFAQs: async (params: QueryParams = {}): Promise<ApiResponse<Faq[]>> => {
       try {
         let query = supabase.from('faqs').select('*');
         
@@ -298,7 +337,7 @@ export const clientApi = {
         
         return {
           success: true,
-          data
+          data: data as Faq[]
         };
       } catch (error) {
         console.error("Error getting FAQs:", error);
@@ -346,7 +385,7 @@ export const clientApi = {
         
         return {
           success: true,
-          data,
+          data: data as Favorite,
           message: "Name added to favorites"
         };
       } catch (error) {
@@ -445,13 +484,19 @@ export const clientApi = {
         
         if (namesError) throw namesError;
         
+        // Cast the gender field to the expected type
+        const typedData = names?.map(item => ({
+          ...item,
+          gender: item.gender as "boy" | "girl" | "unisex"
+        })) as Name[];
+        
         return { 
           success: true, 
-          data: names,
+          data: typedData,
           meta: {
-            total: names.length,
+            total: typedData.length,
             page: 1,
-            limit: names.length,
+            limit: typedData.length,
             totalPages: 1
           }
         };
@@ -583,3 +628,4 @@ export const clientApi = {
 };
 
 export default clientApi;
+
